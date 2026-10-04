@@ -1,0 +1,46 @@
+# Agent Instructions
+
+These instructions are for every AI agent working in this repo, and this file is the only copy: Antigravity (`agy`) reads `AGENTS.md` directly, Claude Code reaches it through `CLAUDE.md` (which imports it), and Gemini CLI through `.gemini/settings.json`. Don't add a `GEMINI.md`: Antigravity loads it in place of this file.
+
+## Before you start
+
+1. **Learn the language.** Read `GLOSSARY.md` and use its terms, never the ones it lists under _Avoid_.
+2. **Know what's real.** Read the README, especially "What works today": several screens show built-in sample data because their backend route doesn't exist yet.
+3. **Respect past decisions.** Read the ADRs in `docs/adr/` that touch what you're changing. If your change contradicts one, say so instead of silently overriding it.
+4. **See what changed recently.** Run `git log --oneline -20`, and `git show <commit>` for anything relevant.
+5. **Find the requirement.** This app's tickets are in `.scratch/<feature>/issues/` in this repo; a ticket's checkboxes are its acceptance criteria. Tickets spanning both projects live in the backend, `/Users/peter/projects/noah ark solutions app/.scratch/`. You can read that folder only if your session includes it (for `agy`: `agy --add-dir "/Users/peter/projects/noah ark solutions app"`); if you can't, ask the user instead of guessing.
+
+## Keep the docs current
+
+Updating the docs is part of every change, not a follow-up. Before you finish:
+
+- A feature starts or stops working, loses its sample-data fallback, or calls a different endpoint: update the README's "What works today" table.
+- A new build setting, command, or setup step: update the README.
+- A decision that is hard to reverse, would surprise a future reader, and was a real trade-off: add an ADR to `docs/adr/` with the next number, and mark any ADR it replaces as superseded.
+- A new or changed domain term: change the backend's `CONTEXT.md`, then copy it over `GLOSSARY.md`.
+- A new rule every agent should follow: add it to this file.
+- Tick the ticket's checkboxes and update its `Status:` line.
+- In your final message, list which docs you updated, or say none needed it.
+
+## Agent skills
+
+### Issue tracker
+
+Issues and specs live as local markdown files under `.scratch/<feature>/`. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Canonical five-role triage vocabulary (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context repository layout (`GLOSSARY.md` + `docs/adr/`). See `docs/agents/domain.md`.
+
+## Working in this codebase
+
+- **Read the README's "What works today" table first.** Several features call backend routes that don't exist yet and fall back to built-in sample data; don't mistake that data for real responses.
+- **Colors:** always `context.churchColors.<job>` (see `lib/src/core/theme/church_colors.dart`), never a hardcoded color, so screens follow the church's Theme and light/dark mode. Text or icons on a filled color use `onPrimary`, `onError`, … or `ChurchColors.onColor(fill)`, never a fixed `Colors.white`. The baked Default Theme there must match the backend's `app/models/theme.py`; change both together.
+- **Checks:** `flutter analyze` must stay clean. After changing a Drift table in `app_database.dart`, bump `schemaVersion`, add the step to `migration`, and run `dart run build_runner build -d`.
+- **Networking:** inside `AuthInterceptor`, token requests and replays go through its private `_tokenDio`, never the intercepted client, which would deadlock on failure.
+- **Build settings** (`TENANT_KEY`, `API_BASE_URL`, `CHURCH_NAME`, `CLIENT_ID`, `CLIENT_SECRET`) come from `--dart-define` or the git-ignored `dart_defines.json`. Never commit a client secret.
+- **The backend** is the FastAPI project at `/Users/peter/projects/noah ark solutions app`. `GLOSSARY.md` here is a copy of its `CONTEXT.md`: change terms there, then copy the file over, never edit `GLOSSARY.md` on its own. Tickets spanning both projects live in the backend's `.scratch/`.

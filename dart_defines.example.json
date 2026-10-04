@@ -1,0 +1,7 @@
+{
+  "TENANT_KEY": "noah-ark",
+  "CHURCH_NAME": "Noah Ark Fellowship",
+  "API_BASE_URL": "http://127.0.0.1:8000/api/v1",
+  "CLIENT_ID": "paste the client_id from scripts.generate_api_client",
+  "CLIENT_SECRET": "paste the client_secret it printed once"
+}

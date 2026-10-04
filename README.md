@@ -1,0 +1,228 @@
+# Noah Ark — church member app (Flutter)
+
+The member app for the Noah Ark Solutions platform: one Flutter codebase that
+every church ships as its own branded app. Each church gets its own build —
+its own name, store listing, icon, and app key — and every build talks to the
+same shared backend, the FastAPI project in `noah ark solutions app`.
+
+A member opens their church's app and sees that church's content, in that
+church's colors, before signing in. Signing in unlocks the personal parts:
+RSVPs, prayer requests, giving.
+
+The domain language (Member, Pastor, Prayer Chain, Theme, …) is defined in
+[`GLOSSARY.md`](GLOSSARY.md), a copy of the backend's `CONTEXT.md`.
+
+---
+
+## What works today
+
+The app's screens are further along than the backend, so several of them call
+endpoints that don't exist yet and fall back to built-in sample data. If a
+screen shows Kathmandu events or a "Sunday Worship Bulletin" you never
+created, that's why.
+
+| Feature | Backend calls | State |
+|---|---|---|
+| Sign in, register | `/auth/login`, `/auth/member/register`, `/auth/me`, `/auth/logout` | **Works**; sanctuary brand hero header, curved bottom surface card, Newsreader greeting, and responsive member registration |
+| Theme (church colors) | `GET /theme` | **Works** — see [Theme](#theme) |
+| Home (sanctuary feed) | `GET /daily-quotes`, `GET /sermons` | **Works**; features warm Newsreader/Inter typography pairing, Sunday Worship Spotlight (10:00 AM), slim action pills (`/bulletins`, `/sermons`, `/groups`, `/admin`), interactive 7-day Weekday Date Strip, 3-Card Devotional layout (Today's Scripture with Philippians 4:6-7 fallback, Pastoral Reflection, Prayer for Today), Fellowship Highlights (`/prayer`, `/events`), and Featured Sermon spotlight with YouTube playback |
+| Sermons | `GET /sermons` | **Works**; sanctuary media archive with search, preacher filter chips, 16:9 video preview cards, and bottom sheet sermon notes |
+| Events and RSVP | `GET /events`, `PUT`/`DELETE /events/{id}/rsvp` | **Partly**: date filters send `from_date`/`to_date`, which the backend ignores (it reads `starts_after`/`starts_before`); an empty or failed calendar shows 3 sample events; RSVP errors are swallowed |
+| Giving | `GET /funds`, `GET`/`POST /donations` | **Partly**: sample funds and receipts on failure; the backend lets only finance roles record a gift; payment methods are sent as `cash`/`cheque`, not the backend's `manual_cash`/`manual_cheque`; **a failed gift still shows a "completed" receipt** |
+| Prayer | Sends `GET`/`POST /prayers`, `POST`/`DELETE /prayers/{id}/intercede`, `GET /prayers/{id}/pastoral-notes`; the backend's routes are `GET`/`POST /prayers/chain`, `GET`/`POST /prayers/private`, `POST`/`DELETE /prayers/{id}/intercessions`, `PATCH /prayers/{id}/answer`, `/close`, `/reopen`, and `GET /prayers/private/{id}/pastoral-prayers` | **Broken**: the backend has no `GET` or `POST /prayers`, so lists come back empty and creating a request fails; the intercession path is `/intercessions`, not `/intercede`; the pastoral notes path is `/prayers/private/{id}/pastoral-prayers`. A private request whose Assigned Pastor lost the role comes back with `assigned_pastor_id: null`, so show it as unassigned. Sanctuary card layout with member initials avatar, italic scripture/prayer body, "Amen" intercession reaction pills, and pastoral care notes |
+| Hymns | `GET /hymns` | **No backend route yet**; sanctuary bilingual songbook with serif typography, dual-column and single-language lyric viewer, search, and bookmarking |
+| Bulletins, announcements | `GET /bulletins`, `GET /announcements` | **No backend route yet**; sanctuary weekly worship bulletin with order of service, urgent notice banners, and PDF attachment download |
+| Groups | `GET /groups`, join, leave | **Partly**: the backend routes now exist and listing and joining work for a signed-in member; leaving sends `DELETE` instead of the backend's `POST`, and a signed-out visitor sees 4 sample groups — see `.scratch/groups/` |
+| Church Workspace (`/admin`, `/workspace`) | — | **Mockup**: hardcoded numbers and rows; "Reconcile" only shows a message |
+| Watch glance (`/watch/glance`) | — | A black two-page route showing the first quote and event; there is no watchOS or Wear OS target |
+
+---
+
+## Running it
+
+You need **Flutter 3.47.5** (pinned in [`.fvmrc`](.fvmrc); `fvm use` picks it
+up, or use a matching `flutter`) and the backend running locally.
+
+**1. Get the app an API client from the backend.** A church app proves which
+app it is with a `client_id` / `client_secret` and trades them for a guest
+token; without one, nothing loads before sign-in. In the backend project:
+
+```bash
+./venv/bin/python -m scripts.generate_api_client create --tenant-key noah-ark --name "Noah Ark app (dev)"
+```
+
+The secret is printed once — copy both values. A secret inside a mobile app is
+not really secret (anyone can pull it from the bundle); the backend treats it
+as an app identity it can throttle and rotate, not as access control.
+
+**2. Put your settings in a local file.**
+
+```bash
+cp dart_defines.example.json dart_defines.json   # git-ignored; fill in CLIENT_ID and CLIENT_SECRET
+```
+
+**3. Run.**
+
+```bash
+flutter run -d chrome --dart-define-from-file=dart_defines.json
+flutter run -d macos --dart-define-from-file=dart_defines.json
+flutter run -d "iPhone 18 Pro" --dart-define-from-file=dart_defines.json
+```
+
+The VS Code launch configurations in [`.vscode/launch.json`](.vscode/launch.json)
+don't pass client credentials yet; add
+`"--dart-define-from-file=dart_defines.json"` to a configuration's `args` to
+use them there.
+
+### Settings
+
+Every setting is fixed when the app is built, with `--dart-define` or the
+`dart_defines.json` file.
+
+| Key | What it is | Default |
+|---|---|---|
+| `TENANT_KEY` | The church's app key; picks which church this build is | `noah-ark` (on the web: the subdomain, e.g. `sbc.example.com` → `sbc`) |
+| `CHURCH_NAME` | Name shown in the app and window title | `Noah Ark Fellowship` |
+| `API_BASE_URL` | Backend address, including `/api/v1` | `http://127.0.0.1:8000/api/v1` |
+| `CLIENT_ID` | The app's API client id | empty — guest content won't load |
+| `CLIENT_SECRET` | The app's API client secret | empty |
+
+### Gotchas talking to a local backend
+
+- **A real phone can't reach `127.0.0.1`** — that's the phone itself. Use your
+  Mac's Wi-Fi address (`http://192.168.x.x:8000/api/v1`), run uvicorn with
+  `--host 0.0.0.0`, and add that address to the backend's `TRUSTED_HOSTS`,
+  which only allows `localhost` and `127.0.0.1` by default and answers anything
+  else with a 400. The Android emulator reaches your Mac at `10.0.2.2`.
+- **The web build needs CORS.** The backend allows no browser origins by
+  default; set its `CORS_ORIGINS` to the address Chrome runs the app on.
+- **The web build has no local database.** Drift isn't configured for the web
+  (`driftDatabase` gets no `web:` options), so nothing is cached there.
+
+---
+
+## How a church's app works
+
+**At startup** ([`lib/main.dart`](lib/main.dart)), in order:
+
+1. Read the build settings (`AppConfig`).
+2. Open secure token storage and the local Drift database.
+3. Create the HTTP client.
+4. Load the church's Theme (below). The native splash screen stays up meanwhile.
+5. Start the app. Every screen's data starts loading at once.
+
+**Tokens** ([`auth_interceptor.dart`](lib/src/core/network/auth_interceptor.dart)):
+every request carries the church's `X-Tenant-Key` and the signed-in member's
+token, or the guest token when nobody is signed in. On a `401` the app tries,
+in turn: refreshing the member's session, then trading the client credentials
+for a new guest token. Then it replays the request once. Tokens live in the
+platform keychain/keystore (`flutter_secure_storage`).
+
+**Navigation** ([`app_router.dart`](lib/src/core/routing/app_router.dart)):
+five tabs (Home, Hymns, Events, Prayer, Giving) — a bottom bar on phones, a
+side rail from 720px wide — plus full-screen routes for bulletins, sermons,
+groups, sign-in, and the Workspace. There is no route guard; screens check
+roles themselves.
+
+---
+
+## Theme
+
+A church's colors come from the backend at `GET /theme`, so a church can
+change them without a new app release.
+
+- **Twelve colors, named by job**, in a light and a dark set: `primary`,
+  `secondary`, `success`, `warning`, `error`, `info`, `background`, `surface`,
+  `raised`, `text`, `textMuted`, `border`. The backend fills in any the church
+  hasn't chosen from its Default Theme, so the app always gets all twelve.
+- **Text on a colored fill is black or white**, whichever contrasts better
+  (`ChurchColors.onColor`), so no church can make a button unreadable.
+- **Loading:** the first launch waits on the splash screen for up to about two
+  seconds for the Theme, then falls back to the Default Theme baked into the
+  app. The Theme is kept on the device, so later launches open in it
+  immediately and refresh it quietly for the next launch. A change on the
+  server shows up the next time the app opens.
+- **In a widget**, use `context.churchColors.primary` and friends, never a
+  hardcoded color, so the screen follows the church and light/dark mode.
+- **The baked Default Theme** in
+  [`church_colors.dart`](lib/src/core/theme/church_colors.dart) must match the
+  backend's `app/models/theme.py`. Change both together.
+
+The app's icon, store name, and splash screen are not part of the Theme: they
+belong to each church's build.
+
+---
+
+## Project layout
+
+```
+lib/
+├── main.dart                     startup (see above)
+└── src/
+    ├── app.dart                  MaterialApp, repositories, blocs
+    ├── core/
+    │   ├── config/               AppConfig: build settings
+    │   ├── database/             Drift tables (app_database.dart) and generated code
+    │   ├── localization/         English / Nepali text helper
+    │   ├── network/              Dio client, auth interceptor, endpoint paths
+    │   ├── routing/              GoRouter routes, tab shell
+    │   ├── security/             token storage
+    │   └── theme/                ChurchColors, AppTheme, ThemeRepository
+    └── features/                 one folder per feature: data/ (repository),
+                                  domain/ (models), presentation/ (bloc, screens)
+```
+
+State is managed with `flutter_bloc`; each feature has a repository that calls
+the backend and a bloc the screens listen to. Internal imports always use the
+`package:noah_ark_base_app_flutter/...` form.
+
+**Local database** ([`app_database.dart`](lib/src/core/database/app_database.dart),
+schema version 2): `CachedThemes` (the kept Theme), `CachedHymns`,
+`CachedDailyQuotes`, `CachedBulletins`, and `CachedEvents`, which nothing uses
+yet. After changing a table, regenerate the code:
+
+```bash
+dart run build_runner build -d
+```
+
+---
+
+## Checks
+
+```bash
+flutter analyze    # must stay clean
+flutter test       # unit tests for models and config, in test/widget_test.dart
+```
+
+---
+
+## Known gaps
+
+Beyond the feature table above:
+
+- Prayer, events, and giving send requests the backend doesn't understand
+  (wrong paths, parameter names, or values) — see the table.
+- **The giving screen invents a "completed" receipt when a gift fails to send.**
+  A member can believe they gave when nothing was recorded.
+- Sample-data fallbacks hide real failures. Once each backend route exists, the
+  fallback should go.
+- The daily-quote cache has no church column, so two church builds on one
+  device would share it.
+- No route guards: the Workspace is reachable by URL, and only the screen
+  checks the role.
+
+---
+
+## Decisions and tickets
+
+- [`docs/adr/`](docs/adr/) — decisions specific to this app: prayer
+  confidentiality (0001–0003), feature-first structure with BLoC and Drift
+  (0004), baked and dynamic church selection (0005), guest-first onboarding
+  (0006), GoRouter shell routing (0008), bilingual hymns (0009), queued token
+  refresh (0010), and the church Theme from the backend (0011, replacing the
+  palette engine in 0007).
+- Tickets for this app go in `.scratch/` here; tickets spanning both projects
+  live in the backend repo under `.scratch/`.
+- AI agents follow [`AGENTS.md`](AGENTS.md). To let one see the backend too,
+  add its folder to the session, e.g.
+  `agy --add-dir "/Users/peter/projects/noah ark solutions app"`.

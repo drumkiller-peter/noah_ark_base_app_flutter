@@ -1,0 +1,495 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:noah_ark_base_app_flutter/src/core/config/app_config.dart';
+import 'package:noah_ark_base_app_flutter/src/core/theme/app_theme.dart';
+import 'package:noah_ark_base_app_flutter/src/core/theme/church_colors.dart';
+import 'package:noah_ark_base_app_flutter/src/core/localization/bilingual_text.dart';
+import 'package:noah_ark_base_app_flutter/src/features/auth/domain/user.dart';
+import 'package:noah_ark_base_app_flutter/src/features/bulletins/domain/bulletin.dart';
+import 'package:noah_ark_base_app_flutter/src/features/devotional/domain/daily_quote.dart';
+import 'package:noah_ark_base_app_flutter/src/features/events/domain/event.dart';
+import 'package:noah_ark_base_app_flutter/src/features/giving/domain/fund.dart';
+import 'package:noah_ark_base_app_flutter/src/features/groups/domain/group.dart';
+import 'package:noah_ark_base_app_flutter/src/features/hymns/domain/hymn.dart';
+import 'package:noah_ark_base_app_flutter/src/features/prayer/domain/prayer_request.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:noah_ark_base_app_flutter/src/features/devotional/presentation/bloc/devotional_bloc.dart';
+import 'package:noah_ark_base_app_flutter/src/features/devotional/presentation/screens/devotional_screen.dart';
+import 'package:noah_ark_base_app_flutter/src/features/sermons/presentation/bloc/sermons_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:noah_ark_base_app_flutter/src/features/sermons/domain/sermon.dart';
+import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/screens/login_screen.dart';
+import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/screens/register_screen.dart';
+import 'package:noah_ark_base_app_flutter/src/features/prayer/presentation/bloc/prayer_bloc.dart';
+import 'package:noah_ark_base_app_flutter/src/features/prayer/presentation/screens/prayer_screen.dart';
+
+void main() {
+  setUpAll(() {
+    GoogleFonts.config.allowRuntimeFetching = false;
+  });
+
+  group('Core Domain Smoke Tests', () {
+    test('AppConfig resolves default tenant key', () {
+      final config = AppConfig.initialize();
+      expect(config.tenantKey, equals('noah-ark'));
+      expect(config.churchName, isNotEmpty);
+    });
+
+    test('BilingualText resolves according to locale fallback', () {
+      const text = BilingualText(en: 'Praise the Lord', ne: 'प्रभुको स्तुति होस्');
+      expect(text.resolve(const Locale('en')), equals('Praise the Lord'));
+      expect(text.resolve(const Locale('ne')), equals('प्रभुको स्तुति होस्'));
+    });
+
+    test('User roles map correctly to leadership permissions', () {
+      expect(UserRole.pastor.isLeadership, isTrue);
+      expect(UserRole.treasurer.isFinanceManager, isTrue);
+      expect(UserRole.member.isLeadership, isFalse);
+    });
+
+    test('Hymn model serialization and bookmarking', () {
+      const hymn = Hymn(
+        id: 1,
+        hymnNumber: 1,
+        titleEn: 'Amazing Grace',
+        titleNe: 'कस्तो अनौठो अनुग्रह',
+        lyricsEn: 'Amazing grace how sweet the sound...',
+        lyricsNe: 'कस्तो अनौठो अनुग्रह...',
+      );
+
+      final bookmarked = hymn.copyWith(isBookmarked: true);
+      expect(bookmarked.isBookmarked, isTrue);
+      expect(hymn.isBookmarked, isFalse);
+    });
+
+    test('Prayer request confidentiality per ADR 0001', () {
+      final prayer = PrayerRequest(
+        id: 1,
+        title: 'Healing prayer',
+        content: 'Please pray for recovery',
+        isPrivate: true,
+        assignedPastorId: 10,
+        createdAt: DateTime.now(),
+      );
+
+      expect(prayer.isPrivate, isTrue);
+      expect(prayer.assignedPastorId, equals(10));
+    });
+
+    test('Church fund visibility per backend rules', () {
+      const fund = ChurchFund(
+        id: 1,
+        name: 'Tithes & Offerings',
+        code: 'TITHES',
+        visibility: FundVisibility.totals,
+        balance: 50000.0,
+      );
+
+      expect(fund.visibility, equals(FundVisibility.totals));
+      expect(fund.balance, equals(50000.0));
+    });
+
+    test('Bulletin and Announcement models deserialize correctly', () {
+      final bulletin = Bulletin.fromJson({
+        'id': 10,
+        'tenant_id': 1,
+        'title': 'Sunday Order of Service',
+        'week_of': '2026-10-04',
+        'content_html': '<p>Opening Hymn</p>',
+        'pdf_url': 'https://storage.church.com/bulletin.pdf',
+        'is_published': true,
+      });
+
+      expect(bulletin.id, equals(10));
+      expect(bulletin.title, equals('Sunday Order of Service'));
+      expect(bulletin.isPublished, isTrue);
+      expect(bulletin.pdfUrl, isNotNull);
+
+      final announcement = Announcement.fromJson({
+        'id': 20,
+        'tenant_id': 1,
+        'title': 'Emergency Prayer Vigil',
+        'body': 'Urgent prayer meeting tonight at 7 PM.',
+        'is_urgent': true,
+      });
+
+      expect(announcement.isUrgent, isTrue);
+      expect(announcement.title, equals('Emergency Prayer Vigil'));
+    });
+
+    test('Sermon model derives YouTube video URL and thumbnail', () {
+      final sermon = Sermon.fromJson({
+        'id': 5,
+        'tenant_id': 1,
+        'title': 'The Beatitudes',
+        'preacher': 'Rev. Ramesh Tamang',
+        'preached_on': '2026-09-27',
+        'youtube_video_id': 'dQw4w9WgXcQ',
+        'description': 'Exposition of Matthew 5',
+      });
+
+      expect(sermon.youtubeUrl, equals('https://www.youtube.com/watch?v=dQw4w9WgXcQ'));
+      expect(sermon.thumbnailUrl, equals('https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg'));
+      expect(sermon.preacher, equals('Rev. Ramesh Tamang'));
+    });
+
+    test('Ministry Group models align with ADR 0004', () {
+      final group = MinistryGroup.fromJson({
+        'id': 3,
+        'tenant_id': 1,
+        'name': 'Young Adults Fellowship',
+        'group_type': 'bible_study',
+        'meeting_schedule': 'Saturday 4:00 PM',
+        'member_count': 25,
+        'is_member': false,
+      });
+
+      expect(group.groupType, equals(GroupType.bibleStudy));
+      expect(group.memberCount, equals(25));
+      expect(group.isMember, isFalse);
+
+      final joined = group.copyWith(isMember: true, memberCount: 26);
+      expect(joined.isMember, isTrue);
+      expect(joined.memberCount, equals(26));
+    });
+
+    test('ChurchEvent 3-way RSVP aligns with ADR 0004', () {
+      final event = ChurchEvent.fromJson({
+        'id': 42,
+        'tenant_id': 1,
+        'title': 'Church Picnic & Fellowship',
+        'start_at': '2026-10-15T10:00:00Z',
+        'location_name': 'Central Park',
+        'attending_count': 50,
+        'maybe_count': 10,
+        'declined_count': 2,
+        'my_rsvp': 'attending',
+      });
+
+      expect(event.myRsvp, equals(RSVPStatus.attending));
+      expect(event.attendingCount, equals(50));
+      expect(event.maybeCount, equals(10));
+      expect(event.location, equals('Central Park'));
+
+      final updated = event.copyWith(
+        myRsvp: RSVPStatus.declined,
+        attendingCount: 49,
+        declinedCount: 3,
+      );
+      expect(updated.myRsvp, equals(RSVPStatus.declined));
+      expect(updated.attendingCount, equals(49));
+      expect(updated.declinedCount, equals(3));
+    });
+
+    test('AppTheme modern sanctuary design tokens and geometry', () {
+      final themeData = AppTheme.light(const ChurchTheme(
+        light: ChurchColors.defaultLight,
+        dark: ChurchColors.defaultDark,
+      ));
+
+      expect(themeData.useMaterial3, isTrue);
+      expect(themeData.cardTheme.shape, isA<RoundedRectangleBorder>());
+      final cardShape = themeData.cardTheme.shape as RoundedRectangleBorder;
+      expect((cardShape.borderRadius as BorderRadius).topLeft.x, equals(16.0));
+      expect(themeData.navigationBarTheme.indicatorColor, isNotNull);
+      expect(themeData.textTheme.titleLarge?.fontWeight, equals(FontWeight.w700));
+    });
+
+    test('DailyQuote fallback provides inspirational scripture on empty state', () {
+      expect(DailyQuote.fallback.content, contains('Do not be anxious'));
+      expect(DailyQuote.fallback.authorName, equals('Philippians 4:6-7'));
+      expect(DailyQuote.fallback.id, equals(0));
+    });
+
+    test('Sermon fallback provides inspirational featured sermon on empty state', () {
+      expect(Sermon.fallback.title, contains('The Sermon on the Mount'));
+      expect(Sermon.fallback.preacher, equals('Rev. Ramesh Tamang'));
+      expect(Sermon.fallback.youtubeVideoId, equals('dQw4w9WgXcQ'));
+      expect(Sermon.fallback.thumbnailUrl, contains('hqdefault.jpg'));
+    });
+  });
+
+  group('Home Feed Modern Sanctuary UI Tests', () {
+    const defaultTheme = ChurchTheme(
+      light: ChurchColors.defaultLight,
+      dark: ChurchColors.defaultDark,
+    );
+
+    Widget createHarness({
+      required ChurchTheme churchTheme,
+      required ThemeMode themeMode,
+      AuthBloc? authBloc,
+      DevotionalBloc? devotionalBloc,
+      SermonsBloc? sermonsBloc,
+    }) {
+      final appConfig = AppConfig.initialize();
+      return RepositoryProvider<AppConfig>.value(
+        value: appConfig,
+        child: MultiBlocProvider(
+          providers: [
+            BlocProvider<AuthBloc>.value(value: authBloc ?? TestAuthBloc()),
+            BlocProvider<DevotionalBloc>.value(value: devotionalBloc ?? TestDevotionalBloc()),
+            BlocProvider<SermonsBloc>.value(value: sermonsBloc ?? TestSermonsBloc()),
+          ],
+          child: MaterialApp(
+            theme: AppTheme.light(churchTheme),
+            darkTheme: AppTheme.dark(churchTheme),
+            themeMode: themeMode,
+            home: const DevotionalScreen(),
+          ),
+        ),
+      );
+    }
+
+    testWidgets('Home Feed renders completely in Light Theme', (tester) async {
+      tester.view.physicalSize = const Size(1200, 6000);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(createHarness(
+        churchTheme: defaultTheme,
+        themeMode: ThemeMode.light,
+      ));
+      await tester.pumpAndSettle();
+
+      // 1. App Bar Header & Greeting
+      expect(find.text('Noah Ark Fellowship'), findsOneWidget);
+      expect(find.text('Welcome to Fellowship'), findsOneWidget);
+
+      // 2. Sunday Worship Spotlight
+      expect(find.text('SUNDAY WORSHIP • 10:00 AM'), findsOneWidget);
+      expect(find.text('Sunday Service & Fellowship'), findsOneWidget);
+      expect(find.text('Order of Service'), findsOneWidget);
+      expect(find.text('Watch Live'), findsOneWidget);
+
+      // 3. Slim Action Pills (Replacing 8-box grid)
+      expect(find.text('Sunday Bulletin'), findsOneWidget);
+      expect(find.text('Watch Sermons'), findsOneWidget);
+      expect(find.text('Small Groups'), findsOneWidget);
+      expect(find.text('Church Workspace', skipOffstage: false), findsOneWidget);
+
+      // 4. Weekday Calendar Strip
+      expect(find.text('SUN'), findsOneWidget);
+      expect(find.text('MON'), findsOneWidget);
+      expect(find.text('SAT'), findsOneWidget);
+
+      // 5. 3-Card Sanctuary Devotional Layout
+      expect(find.text("TODAY'S SCRIPTURE"), findsOneWidget);
+      expect(find.text('REFLECTION'), findsOneWidget);
+      expect(find.text('PRAYER FOR TODAY'), findsOneWidget);
+      expect(find.text('Copy Verse'), findsOneWidget);
+      expect(find.text('Pray'), findsOneWidget);
+      expect(find.text('Hymnal'), findsOneWidget);
+
+      // 6. Fellowship Highlights Pulse Cards
+      expect(find.text('FELLOWSHIP HIGHLIGHTS'), findsOneWidget);
+      expect(find.text('Community Intercession & Gatherings'), findsOneWidget);
+      expect(find.text('Intercession'), findsOneWidget);
+      expect(find.text('Gatherings'), findsOneWidget);
+      expect(find.text('Pray Together'), findsOneWidget);
+      expect(find.text('View Schedule'), findsOneWidget);
+
+      // 7. Featured Sermon Media Spotlight
+      expect(find.text('FEATURED SERMON'), findsOneWidget);
+      expect(find.text('All Sermons'), findsOneWidget);
+      expect(find.text('Watch Sermon'), findsOneWidget);
+      expect(find.text('Archive'), findsOneWidget);
+      expect(find.text('Rev. Ramesh Tamang'), findsOneWidget);
+    });
+
+    testWidgets('Home Feed renders completely in Dark Theme', (tester) async {
+      tester.view.physicalSize = const Size(1200, 6000);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(createHarness(
+        churchTheme: defaultTheme,
+        themeMode: ThemeMode.dark,
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Welcome to Fellowship'), findsOneWidget);
+      expect(find.text('SUNDAY WORSHIP • 10:00 AM'), findsOneWidget);
+      expect(find.text('Sunday Bulletin'), findsOneWidget);
+      expect(find.text("TODAY'S SCRIPTURE"), findsOneWidget);
+      expect(find.text('REFLECTION'), findsOneWidget);
+      expect(find.text('PRAYER FOR TODAY'), findsOneWidget);
+      expect(find.text('FELLOWSHIP HIGHLIGHTS'), findsOneWidget);
+      expect(find.text('FEATURED SERMON'), findsOneWidget);
+    });
+
+    testWidgets('Tapping weekday date strip pill triggers selection', (tester) async {
+      tester.view.physicalSize = const Size(1200, 3000);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(createHarness(
+        churchTheme: defaultTheme,
+        themeMode: ThemeMode.light,
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.text('MON'), findsOneWidget);
+      await tester.tap(find.text('MON'));
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('Home Feed greets authenticated member with personalized greeting and role badge', (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      const user = User(
+        id: 42,
+        email: 'pastor@church.org',
+        fullName: 'Barnabas Paul',
+        role: UserRole.pastor,
+        tenantId: 1,
+      );
+
+      final authBloc = TestAuthBloc(const Authenticated(user));
+
+      await tester.pumpWidget(createHarness(
+        churchTheme: defaultTheme,
+        themeMode: ThemeMode.light,
+        authBloc: authBloc,
+      ));
+      await tester.pumpAndSettle();
+
+      // Check personalized greeting containing first name
+      expect(find.textContaining('Barnabas'), findsOneWidget);
+      // Check leadership role chip
+      expect(find.text('PASTOR'), findsWidgets);
+    });
+
+    testWidgets('LoginScreen renders sanctuary hero header and form inputs', (tester) async {
+      final appConfig = AppConfig.initialize();
+      await tester.pumpWidget(
+        RepositoryProvider<AppConfig>.value(
+          value: appConfig,
+          child: BlocProvider<AuthBloc>.value(
+            value: TestAuthBloc(),
+            child: MaterialApp(
+              theme: AppTheme.light(defaultTheme),
+              home: const LoginScreen(),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Noah Ark Fellowship'), findsOneWidget);
+      expect(find.text('Your church community, always within reach'), findsOneWidget);
+      expect(find.text('Welcome'), findsOneWidget);
+      expect(find.text('Sign in to continue to your church'), findsOneWidget);
+      expect(find.text('Sign In'), findsOneWidget);
+      expect(find.text('Create account'), findsOneWidget);
+    });
+
+    testWidgets('RegisterScreen renders sanctuary hero header and registration inputs', (tester) async {
+      final appConfig = AppConfig.initialize();
+      await tester.pumpWidget(
+        RepositoryProvider<AppConfig>.value(
+          value: appConfig,
+          child: BlocProvider<AuthBloc>.value(
+            value: TestAuthBloc(),
+            child: MaterialApp(
+              theme: AppTheme.light(defaultTheme),
+              home: const RegisterScreen(),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Noah Ark Fellowship'), findsOneWidget);
+      expect(find.text('Connect with our church family'), findsOneWidget);
+      expect(find.text('Join Congregation'), findsOneWidget);
+      expect(find.text('Create Account'), findsOneWidget);
+      expect(find.text('Sign in'), findsOneWidget);
+    });
+
+    testWidgets('PrayerScreen renders sanctuary header and prayer chain testimonies', (tester) async {
+      tester.view.physicalSize = const Size(1200, 3000);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      final samplePrayer = PrayerRequest(
+        id: 1,
+        title: 'Healing and Peace in Family',
+        content: 'Praying for my mother who is recovering from surgery. God has been so faithful!',
+        authorName: 'Grace Williams',
+        createdAt: DateTime(2026, 10, 4),
+        intercessionCount: 87,
+        hasInterceded: false,
+      );
+
+      final prayerBloc = TestPrayerBloc(PrayerLoaded(
+        publicPrayers: [samplePrayer],
+        privatePrayers: const [],
+      ));
+
+      await tester.pumpWidget(
+        MultiBlocProvider(
+          providers: [
+            BlocProvider<AuthBloc>.value(value: TestAuthBloc()),
+            BlocProvider<PrayerBloc>.value(value: prayerBloc),
+          ],
+          child: MaterialApp(
+            theme: AppTheme.light(defaultTheme),
+            home: const PrayerScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Testimonies & Prayer'), findsOneWidget);
+      expect(find.text('Ask for Prayer'), findsOneWidget);
+      expect(find.text('Grace Williams'), findsOneWidget);
+      expect(find.text('G'), findsOneWidget);
+      expect(find.text('Healing and Peace in Family'), findsOneWidget);
+      expect(find.text('“Praying for my mother who is recovering from surgery. God has been so faithful!”'), findsOneWidget);
+      expect(find.text('Amen (87)'), findsOneWidget);
+    });
+  });
+}
+
+class TestAuthBloc extends Bloc<AuthEvent, AuthState> implements AuthBloc {
+  TestAuthBloc([super.initialState = const UnauthenticatedGuest()]);
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class TestDevotionalBloc extends Bloc<DevotionalEvent, DevotionalState> implements DevotionalBloc {
+  TestDevotionalBloc([super.initialState = const DevotionalInitial()]);
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class TestSermonsBloc extends Bloc<SermonsEvent, SermonsState> implements SermonsBloc {
+  TestSermonsBloc([super.initialState = const SermonsInitial()]);
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class TestPrayerBloc extends Bloc<PrayerEvent, PrayerState> implements PrayerBloc {
+  TestPrayerBloc([super.initialState = const PrayerInitial()]);
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}

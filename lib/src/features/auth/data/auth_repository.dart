@@ -1,0 +1,123 @@
+import 'package:noah_ark_base_app_flutter/src/core/network/api_client.dart';
+import 'package:noah_ark_base_app_flutter/src/core/network/api_endpoints.dart';
+import 'package:noah_ark_base_app_flutter/src/core/security/token_storage.dart';
+import 'package:noah_ark_base_app_flutter/src/features/auth/domain/user.dart';
+
+class AuthRepository {
+  final ApiClient apiClient;
+  final TokenStorage tokenStorage;
+
+  AuthRepository({
+    required this.apiClient,
+    required this.tokenStorage,
+  });
+
+  Future<User?> checkAuth() async {
+    final token = await tokenStorage.getAccessToken();
+    if (token == null || token.isEmpty) {
+      return null;
+    }
+    try {
+      final response = await apiClient.dio.get<Map<String, dynamic>>(ApiEndpoints.me);
+      if (response.statusCode == 200 && response.data != null) {
+        final user = User.fromJson(response.data!);
+        await tokenStorage.saveUserTokens(
+          accessToken: token,
+          refreshToken: (await tokenStorage.getRefreshToken()) ?? '',
+          userRole: user.role.value,
+        );
+        return user;
+      }
+    } catch (_) {
+      // Failed to validate token or offline
+    }
+    return null;
+  }
+
+  Future<User> login({
+    required String identifier,
+    required String password,
+  }) async {
+    final response = await apiClient.dio.post<Map<String, dynamic>>(
+      ApiEndpoints.login,
+      data: {
+        'identifier': identifier,
+        'password': password,
+      },
+    );
+
+    if (response.statusCode == 200 && response.data != null) {
+      final data = response.data!;
+      final accessToken = data['access_token'] as String;
+      final refreshToken = data['refresh_token'] as String;
+
+      await tokenStorage.saveUserTokens(
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+      );
+
+      // Fetch user profile immediately after login
+      final profileResponse = await apiClient.dio.get<Map<String, dynamic>>(ApiEndpoints.me);
+      final user = User.fromJson(profileResponse.data!);
+
+      await tokenStorage.saveUserTokens(
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+        userRole: user.role.value,
+      );
+
+      return user;
+    } else {
+      throw Exception('Login failed');
+    }
+  }
+
+  Future<User> registerMember({
+    required String fullName,
+    String? email,
+    String? phone,
+    required String password,
+  }) async {
+    final response = await apiClient.dio.post<Map<String, dynamic>>(
+      ApiEndpoints.memberRegister,
+      data: {
+        'full_name': fullName,
+        'email': ?email,
+        'phone': ?phone,
+        'password': password,
+      },
+    );
+
+    if (response.statusCode == 201 && response.data != null) {
+      final data = response.data!;
+      final user = User.fromJson(data['user'] as Map<String, dynamic>);
+      final tokens = data['tokens'] as Map<String, dynamic>;
+
+      await tokenStorage.saveUserTokens(
+        accessToken: tokens['access_token'] as String,
+        refreshToken: tokens['refresh_token'] as String,
+        userRole: user.role.value,
+      );
+
+      return user;
+    } else {
+      throw Exception('Registration failed');
+    }
+  }
+
+  Future<void> logout() async {
+    try {
+      final refreshToken = await tokenStorage.getRefreshToken();
+      if (refreshToken != null && refreshToken.isNotEmpty) {
+        await apiClient.dio.post<void>(
+          ApiEndpoints.logout,
+          data: {'refresh_token': refreshToken},
+        );
+      }
+    } catch (_) {
+      // Ignored: revoke locally even if remote call fails
+    } finally {
+      await tokenStorage.clearUserSession();
+    }
+  }
+}

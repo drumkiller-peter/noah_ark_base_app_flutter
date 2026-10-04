@@ -1,0 +1,133 @@
+# Noah Ark Solutions
+
+A white-label church app platform: one shared backend serves many churches, each of which ships its own branded member app.
+
+## Language
+
+### Roles
+
+Each person holds exactly one role in their church. A Super Admin may give anyone any role, a Pastor may give any church role, and an Admin may make someone only an Elder or a Member.
+
+**Super Admin**:
+Platform staff who manage every church on the platform, not a member of any one congregation's leadership.
+_Avoid_: platform admin, global admin
+
+**Pastor**:
+A church's spiritual leader, with full management rights over that one church and the only church role a Private Prayer Request can be assigned to. A church may have several.
+_Avoid_: assistant pastor, senior pastor
+
+**Admin**:
+Church office staff with the same management rights as a Pastor, except that private prayer requests, the authors of anonymous ones, and the giving ledger stay hidden from them. An Admin creates, edits, and deactivates only Elder and Member accounts, and may give only those two roles; a Pastor manages every account except a Super Admin's.
+_Avoid_: church admin, secretary, administrator
+
+**Treasurer**:
+An Elder who also manages the church's finances (funds, donations, payouts), and has no other management rights.
+_Avoid_: finance manager, accountant
+
+**Youth Leader**:
+A church role that may post church-wide Events and Announcements, managing only those it created, and may create Groups, becoming their first Group Leader.
+_Avoid_: youth committee, youth pastor
+
+**Elder**:
+A title for a church's elders and deacons, carrying exactly a Member's rights.
+_Avoid_: deacon, committee member
+
+**Member**:
+A signed-in person belonging to one church, with no management rights over it.
+_Avoid_: user, congregant
+
+### Groups
+
+**Group**:
+A set of Members within one church who meet or serve together, such as a Bible study, choir, or youth fellowship. Content for a subset of the church belongs in a Group. A Group is either open, which any Member may join themselves, or closed, which only its Group Leaders, Pastors, and Admins can add Members to; any Member may leave. Every Member can see that a Group exists, but its Group Posts and member list stay within it.
+_Avoid_: section, committee, ministry
+
+**Group Leader**:
+A Member who leads one Group, managing its membership, Group Posts, and Events, with no rights beyond that Group. Whoever creates a Group becomes its first Group Leader; after that, rights over the Group come only from leading it. A Group may have several, appointed by its Group Leaders or the church's Pastors and Admins, or none, in which case its Pastors and Admins manage it until they appoint one. A Member stops being a Group Leader the moment they leave the Group or stop being an active Member.
+_Avoid_: co-leader, group owner, group admin
+
+**Archived Group**:
+A Group that has ended: hidden from browsing and joining, its Events off the calendar, and its history kept for the church's Pastors and Admins. A Group is archived, never deleted, and a Pastor or Admin may unarchive it, restoring its members, Group Posts, and future Events.
+_Avoid_: deleted group, disbanded group, inactive group
+
+**Group Post**:
+A message posted inside one Group by one of its Group Leaders or by a Pastor or Admin, visible only to that Group's members and the church's Pastors and Admins. Other Members of the Group read but do not post. Its author may edit or delete it; the Group's other Group Leaders and the church's Pastors and Admins may delete it. Deletion is permanent. Content meant for a subset of the church is a Group Post, never an Announcement.
+_Avoid_: group message, group announcement
+
+### Publishing
+
+**Announcement**:
+A time-bound notice to the whole church, such as a schedule change or an urgent request. Always church-wide; anything for a subset of the church is a Group Post instead.
+_Avoid_: notice, section announcement
+
+**Bulletin**:
+A church's weekly bulletin, one per week, published for the whole church.
+_Avoid_: newsletter, weekly
+
+### Calendar
+
+**Event**:
+A dated gathering on a church's calendar, either church-wide or belonging to one Group. A church-wide Event is posted by a Pastor, Admin, or Youth Leader; a Group's Event is posted by its Group Leaders or a Pastor or Admin, and only that Group's Members and the church's Pastors and Admins see it.
+_Avoid_: section event, youth event
+
+### Sermons
+
+**Sermon**:
+A recorded sermon the church publishes as a public YouTube video, shown in its app to anyone, signed in or not, from the moment a Pastor or Admin adds it. It carries the date it was preached and its Preacher, who need not be a member of the church.
+_Avoid_: message, video
+
+**Preacher**:
+Whoever preached a Sermon, named as free text so guest speakers can be credited.
+_Avoid_: speaker, pastor (when meaning the preacher of one Sermon)
+
+### Prayer
+
+**Prayer Request**:
+Something a Member asks their church to pray for, either on the Prayer Chain or as a Private Prayer Request.
+_Avoid_: prayer post, prayer item
+
+**Prayer Chain**:
+A church's shared list of Prayer Requests that every Member of that church can see.
+_Avoid_: prayer wall, public chain, prayer board
+
+**Private Prayer Request**:
+A Prayer Request kept off the Prayer Chain and visible only to its author, its Assigned Pastor, and Super Admins. Other Pastors do not know it exists.
+_Avoid_: pastor-only request, confidential request
+
+**Assigned Pastor**:
+The one Pastor a Private Prayer Request is entrusted to, chosen by its author and changeable by the author or by the Assigned Pastor handing it to another Pastor. A Pastor may not be assigned their own request. Validity is judged at read time against the Pastor's current role and active status: if the Assigned Pastor stops being an active Pastor, the request goes back to its author until they choose another.
+_Avoid_: owner, handler, assignee
+
+**Anonymous Prayer Request**:
+A Prayer Chain request whose author is hidden from other Members, though never from the Pastors. A Private Prayer Request is never anonymous.
+_Avoid_: hidden request
+
+**Intercession**:
+A Member's standing commitment to pray for someone else's open Prayer Request on the Prayer Chain, which they can withdraw.
+_Avoid_: prayer, like, amen
+
+**Pastoral Prayer**:
+A dated record that the Assigned Pastor has prayed for a Private Prayer Request, optionally with a short one-way note to its author. It applies only to Private Prayer Requests, can be added many times, never gates the request's status, and is append-only: once recorded it cannot be edited or deleted. Readable by the request's author, the Pastor who recorded it, and Super Admins.
+_Avoid_: prayed mark, acknowledgement, pastoral note
+
+**Answered**:
+A Prayer Request the author has marked as answered, optionally with a note on how it was answered.
+_Avoid_: resolved, fulfilled
+
+**Closed**:
+A Prayer Request that no longer needs prayer, closed by its author, by a Pastor or Admin moderating the Prayer Chain, or by the Assigned Pastor of a Private Prayer Request. The author can reopen it unless it was closed for moderation.
+_Avoid_: archived, removed, deleted
+
+### Apps
+
+**Church Workspace**:
+The web workspace where people holding management rights in a church manage it, each seeing only what their role allows. Members use their church's member app instead.
+_Avoid_: CMS, admin panel, dashboard, church desktop, back office
+
+**Theme**:
+The light- and dark-mode colors a church's member app is drawn in, changeable by that church's Pastors and Admins or a Super Admin and visible to anyone, signed in or not. The app's icon, store name, and splash screen belong to each church's app build, not its Theme.
+_Avoid_: branding, skin, palette, colors
+
+**Default Theme**:
+The platform's colors, which a church's app uses for every color its Theme leaves unchosen. When the platform changes its Default Theme, every church follows it for the colors it never chose.
+_Avoid_: base theme, fallback colors, Noah Ark theme

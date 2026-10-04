@@ -1,0 +1,52 @@
+name: noah_ark_base_app_flutter
+description: "Noah Ark Solutions - White-label multi-tenant church app platform."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.13.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # State Management
+  flutter_bloc: ^8.1.6
+  bloc: ^8.1.4
+  equatable: ^2.0.7
+
+  # Routing & Deep Linking
+  go_router: ^14.8.1
+
+  # Networking & Token Management
+  dio: ^5.8.0+1
+  flutter_secure_storage: ^9.2.4
+  connectivity_plus: ^6.1.4
+
+  # Local Persistence & SQLite
+  drift: ^2.26.0
+  drift_flutter: ^0.2.4
+  sqlite3_flutter_libs: ^0.5.31
+  path_provider: ^2.1.5
+  path: ^1.9.1
+
+  # Formatting, Date & Localization
+  intl: ^0.20.2
+
+  # UI, Icons, Media & Utilities
+  cupertino_icons: ^1.0.8
+  cached_network_image: ^3.4.1
+  url_launcher: ^6.3.1
+  google_fonts: ^9.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  drift_dev: ^2.26.0
+  build_runner: ^2.4.15
+
+flutter:
+  uses-material-design: true

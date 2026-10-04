@@ -15,7 +15,7 @@ import 'package:noah_ark_base_app_flutter/src/features/prayer/domain/prayer_requ
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:noah_ark_base_app_flutter/src/features/devotional/presentation/bloc/devotional_bloc.dart';
-import 'package:noah_ark_base_app_flutter/src/features/devotional/presentation/screens/devotional_screen.dart';
+import 'package:noah_ark_base_app_flutter/src/features/devotional/presentation/screens/home_screen.dart';
 import 'package:noah_ark_base_app_flutter/src/features/sermons/presentation/bloc/sermons_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:noah_ark_base_app_flutter/src/features/sermons/domain/sermon.dart';
@@ -134,8 +134,8 @@ void main() {
       expect(sermon.preacher, equals('Rev. Ramesh Tamang'));
     });
 
-    test('Ministry Group models align with ADR 0004', () {
-      final group = MinistryGroup.fromJson({
+    test('Group models align with ADR 0004', () {
+      final group = Group.fromJson({
         'id': 3,
         'tenant_id': 1,
         'name': 'Young Adults Fellowship',
@@ -236,7 +236,7 @@ void main() {
             theme: AppTheme.light(churchTheme),
             darkTheme: AppTheme.dark(churchTheme),
             themeMode: themeMode,
-            home: const DevotionalScreen(),
+            home: const HomeScreen(),
           ),
         ),
       );
@@ -465,7 +465,7 @@ void main() {
       expect(find.text('G'), findsOneWidget);
       expect(find.text('Healing and Peace in Family'), findsOneWidget);
       expect(find.text('“Praying for my mother who is recovering from surgery. God has been so faithful!”'), findsOneWidget);
-      expect(find.text('Amen (87)'), findsOneWidget);
+      expect(find.text('Intercede (87)'), findsOneWidget);
     });
   });
 }

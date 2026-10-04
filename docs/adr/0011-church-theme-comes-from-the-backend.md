@@ -1,3 +1,7 @@
+---
+status: partly superseded by ADR-0014 (the logo is now runtime too)
+---
+
 # The church Theme comes from the backend and is applied at launch
 
 A church's colors are its Theme, read from the backend's `GET /theme` rather than derived in the app from one brand color: twelve colors named by job (`primary`, `error`, `text`, …) in a light and a dark set, already resolved against the platform's Default Theme, so the app never invents a color. Text on a filled color is black or white by contrast, chosen by the app, so no Theme can make a button unreadable. The Theme is chosen once, before the first frame: a kept copy if there is one, otherwise up to about two seconds of waiting on the splash screen, otherwise the Default Theme baked into the app. A fresh copy is always fetched and kept for the next launch.

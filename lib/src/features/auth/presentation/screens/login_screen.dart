@@ -54,67 +54,72 @@ class _LoginScreenState extends State<LoginScreen> {
                 // Top Hero Section
                 Expanded(
                   flex: 4,
-                  child: Stack(
-                    children: [
-                      if (Navigator.canPop(context))
-                        Positioned(
-                          top: 8,
-                          left: 8,
-                          child: IconButton(
-                            icon: Icon(
-                              Icons.arrow_back_rounded,
-                              color: context.churchColors.onPrimary,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: AppTheme.heroGradient(context.churchColors),
+                    ),
+                    child: Stack(
+                      children: [
+                        if (Navigator.canPop(context))
+                          Positioned(
+                            top: 8,
+                            left: 8,
+                            child: IconButton(
+                              icon: Icon(
+                                Icons.arrow_back_rounded,
+                                color: context.churchColors.onPrimary,
+                              ),
+                              onPressed: () => Navigator.maybePop(context),
                             ),
-                            onPressed: () => Navigator.maybePop(context),
                           ),
-                        ),
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            // Church Logo Container
-                            Container(
-                              width: 60,
-                              height: 60,
-                              decoration: BoxDecoration(
-                                color: context.churchColors.onPrimary.withValues(alpha: 0.16),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: context.churchColors.onPrimary.withValues(alpha: 0.25),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              // Church Logo Container
+                              Container(
+                                width: 60,
+                                height: 60,
+                                decoration: BoxDecoration(
+                                  color: context.churchColors.onPrimary.withValues(alpha: 0.16),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: context.churchColors.onPrimary.withValues(alpha: 0.25),
+                                  ),
+                                ),
+                                child: Icon(
+                                  Icons.church_rounded,
+                                  size: 32,
+                                  color: context.churchColors.onPrimary,
                                 ),
                               ),
-                              child: Icon(
-                                Icons.church_rounded,
-                                size: 32,
-                                color: context.churchColors.onPrimary,
+                              const SizedBox(height: 14),
+                              Text(
+                                appConfig.churchName,
+                                textAlign: TextAlign.center,
+                                style: AppTheme.serif(
+                                  fontSize: 25,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: -0.3,
+                                  color: context.churchColors.onPrimary,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 14),
-                            Text(
-                              appConfig.churchName,
-                              textAlign: TextAlign.center,
-                              style: AppTheme.serif(
-                                fontSize: 25,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: -0.3,
-                                color: context.churchColors.onPrimary,
+                              const SizedBox(height: 6),
+                              Text(
+                                'Your church community, always within reach',
+                                textAlign: TextAlign.center,
+                                style: AppTheme.sans(
+                                  fontSize: 13,
+                                  color: context.churchColors.onPrimary.withValues(alpha: 0.85),
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              'Your church community, always within reach',
-                              textAlign: TextAlign.center,
-                              style: AppTheme.sans(
-                                fontSize: 13,
-                                color: context.churchColors.onPrimary.withValues(alpha: 0.85),
-                              ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
 

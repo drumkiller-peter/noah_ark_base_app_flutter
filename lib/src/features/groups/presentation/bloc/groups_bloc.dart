@@ -52,8 +52,8 @@ class GroupsLoading extends GroupsState {
 }
 
 class GroupsLoaded extends GroupsState {
-  final List<MinistryGroup> allGroups;
-  final List<MinistryGroup> filteredGroups;
+  final List<Group> allGroups;
+  final List<Group> filteredGroups;
   final GroupType? selectedType;
 
   const GroupsLoaded({
@@ -169,7 +169,7 @@ class GroupsBloc extends Bloc<GroupsEvent, GroupsState> {
         memberCount: newMemberCount < 0 ? 0 : newMemberCount,
       );
 
-      final updatedAll = List<MinistryGroup>.from(current.allGroups);
+      final updatedAll = List<Group>.from(current.allGroups);
       updatedAll[index] = updatedGroup;
 
       final updatedFiltered = current.selectedType == null

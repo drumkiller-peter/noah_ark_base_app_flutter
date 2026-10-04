@@ -66,6 +66,35 @@ class AppTheme {
     );
   }
 
+  /// The sanctuary card surface: the church's surface, a hairline border, and a soft lift.
+  static BoxDecoration sanctuaryCard(ChurchColors colors, {double radius = 18}) {
+    return BoxDecoration(
+      color: colors.surface,
+      borderRadius: BorderRadius.circular(radius),
+      border: Border.all(color: colors.border.withValues(alpha: 0.7)),
+      boxShadow: [
+        BoxShadow(
+          color: colors.text.withValues(alpha: 0.04),
+          blurRadius: 16,
+          offset: const Offset(0, 6),
+        ),
+      ],
+    );
+  }
+
+  /// A filled hero gradient from the church's primary color. It deepens or lightens
+  /// toward the side that keeps [ChurchColors.onPrimary] readable across the fill.
+  static LinearGradient heroGradient(ChurchColors colors) {
+    final hsl = HSLColor.fromColor(colors.primary);
+    final onDark = colors.onPrimary.computeLuminance() > 0.5;
+    final lightness = (hsl.lightness + (onDark ? -0.1 : 0.1)).clamp(0.0, 1.0);
+    return LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [colors.primary, hsl.withLightness(lightness).toColor()],
+    );
+  }
+
   static ThemeData build(ChurchColors colors, Brightness brightness) {
     final tint = brightness == Brightness.light ? 0.15 : 0.25;
     final colorScheme = ColorScheme(

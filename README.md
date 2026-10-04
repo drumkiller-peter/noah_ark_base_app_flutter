@@ -27,9 +27,9 @@ created, that's why.
 | Theme (church colors) | `GET /theme` | **Works** — see [Theme](#theme) |
 | Home (sanctuary feed) | `GET /daily-quotes`, `GET /sermons` | **Works**; features warm Newsreader/Inter typography pairing, Sunday Worship Spotlight (10:00 AM), slim action pills (`/bulletins`, `/sermons`, `/groups`, `/admin`), interactive 7-day Weekday Date Strip, 3-Card Devotional layout (Today's Scripture with Philippians 4:6-7 fallback, Pastoral Reflection, Prayer for Today), Fellowship Highlights (`/prayer`, `/events`), and Featured Sermon spotlight with YouTube playback |
 | Sermons | `GET /sermons` | **Works**; sanctuary media archive with search, preacher filter chips, 16:9 video preview cards, and bottom sheet sermon notes |
-| Events and RSVP | `GET /events`, `PUT`/`DELETE /events/{id}/rsvp` | **Partly**: date filters send `from_date`/`to_date`, which the backend ignores (it reads `starts_after`/`starts_before`); an empty or failed calendar shows 3 sample events; RSVP errors are swallowed |
-| Giving | `GET /funds`, `GET`/`POST /donations` | **Partly**: sample funds and receipts on failure; the backend lets only finance roles record a gift; payment methods are sent as `cash`/`cheque`, not the backend's `manual_cash`/`manual_cheque`; **a failed gift still shows a "completed" receipt** |
-| Prayer | Sends `GET`/`POST /prayers`, `POST`/`DELETE /prayers/{id}/intercede`, `GET /prayers/{id}/pastoral-notes`; the backend's routes are `GET`/`POST /prayers/chain`, `GET`/`POST /prayers/private`, `POST`/`DELETE /prayers/{id}/intercessions`, `PATCH /prayers/{id}/answer`, `/close`, `/reopen`, and `GET /prayers/private/{id}/pastoral-prayers` | **Broken**: the backend has no `GET` or `POST /prayers`, so lists come back empty and creating a request fails; the intercession path is `/intercessions`, not `/intercede`; the pastoral notes path is `/prayers/private/{id}/pastoral-prayers`. A private request whose Assigned Pastor lost the role comes back with `assigned_pastor_id: null`, so show it as unassigned. Sanctuary card layout with member initials avatar, italic scripture/prayer body, "Amen" intercession reaction pills, and pastoral care notes |
+| Events and RSVP | `GET /events`, `PUT`/`DELETE /events/{id}/rsvp` | Sanctuary event cards with serif date tiles; **Partly**: date filters send `from_date`/`to_date`, which the backend ignores (it reads `starts_after`/`starts_before`); an empty or failed calendar shows 3 sample events; RSVP errors are swallowed |
+| Giving | `GET /funds`, `GET`/`POST /donations` | Sanctuary hero and fund cards with serif balances; **Partly**: sample funds and receipts on failure; the backend lets only finance roles record a gift; payment methods are sent as `cash`/`cheque`, not the backend's `manual_cash`/`manual_cheque`; **a failed gift still shows a "completed" receipt** |
+| Prayer | Sends `GET`/`POST /prayers`, `POST`/`DELETE /prayers/{id}/intercede`, `GET /prayers/{id}/pastoral-notes`; the backend's routes are `GET`/`POST /prayers/chain`, `GET`/`POST /prayers/private`, `POST`/`DELETE /prayers/{id}/intercessions`, `PATCH /prayers/{id}/answer`, `/close`, `/reopen`, and `GET /prayers/private/{id}/pastoral-prayers` | **Broken**: the backend has no `GET` or `POST /prayers`, so lists come back empty and creating a request fails; the intercession path is `/intercessions`, not `/intercede`; the pastoral notes path is `/prayers/private/{id}/pastoral-prayers`. A private request whose Assigned Pastor lost the role comes back with `assigned_pastor_id: null`, so show it as unassigned. Sanctuary card layout with member initials avatar, italic scripture/prayer body, "Intercede" / "Interceding" intercession pills, and pastoral care notes |
 | Hymns | `GET /hymns` | **No backend route yet**; sanctuary bilingual songbook with serif typography, dual-column and single-language lyric viewer, search, and bookmarking |
 | Bulletins, announcements | `GET /bulletins`, `GET /announcements` | **No backend route yet**; sanctuary weekly worship bulletin with order of service, urgent notice banners, and PDF attachment download |
 | Groups | `GET /groups`, join, leave | **Partly**: the backend routes now exist and listing and joining work for a signed-in member; leaving sends `DELETE` instead of the backend's `POST`, and a signed-out visitor sees 4 sample groups — see `.scratch/groups/` |
@@ -123,6 +123,20 @@ five tabs (Home, Hymns, Events, Prayer, Giving) — a bottom bar on phones, a
 side rail from 720px wide — plus full-screen routes for bulletins, sermons,
 groups, sign-in, and the Workspace. There is no route guard; screens check
 roles themselves.
+
+---
+
+## Adding a church
+
+Each church gets its own Member App: its own name, icon, store listing and App Key, built from this one codebase. The full process, the decisions behind it and what to collect from the church are in [`/Users/peter/projects/NOAH_ARK_PLATFORM.md`](/Users/peter/projects/NOAH_ARK_PLATFORM.md), outside both repos. Most steps aren't built yet; each one names its ticket.
+
+1. **Create the church in the backend.** Not built: backend ticket `churches/01` adds `python -m scripts.provision_church create`. It makes the church, its first Pastor and the app's API client, and prints the client ID and secret once. Keep them in the password manager. Until then, `POST /auth/register` makes the church and its first Pastor, and `scripts.generate_api_client create --tenant-key <app-key>` makes the client.
+2. **Set its colors and logo.** Colors work today: as a Super Admin, `PUT /theme?tenant_id=<id>`. Logo upload is backend ticket `theme/07`.
+3. **Add its folder here.** Not built: ticket `member-apps/01` adds `tool/new_church.sh <app-key>`, which creates `churches/<app-key>/`. Fill in `church.json`, add the logo, and put the client ID and secret in its git-ignored `dart_defines.json`.
+4. **Build.** Not built: tickets `member-apps/01` and `member-apps/02` add `tool/build_member_app.sh <app-key> <ios|android>`. It applies the bundle ID (`com.noaharksolutions.<app-key>`), name, icon and splash screen, then builds. Build from a clean checkout. Until then, `flutter run --dart-define-from-file=dart_defines.json` runs one church at a time with the shared `com.example` IDs.
+5. **Submit to the stores** under the church's own Apple and Google accounts, with its privacy policy URL (backend ticket `stores/01`). Every church ships the same version at the same time.
+
+The web app is one build for every church, chosen by subdomain (`<app-key>.localhost` during development): ticket `web/01`.
 
 ---
 

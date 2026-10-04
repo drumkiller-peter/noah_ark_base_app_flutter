@@ -164,20 +164,7 @@ class _HymnsScreenState extends State<HymnsScreen> {
 
                       return Container(
                         margin: const EdgeInsets.only(bottom: 10),
-                        decoration: BoxDecoration(
-                          color: context.churchColors.surface,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: context.churchColors.border.withValues(alpha: 0.7),
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: context.churchColors.text.withValues(alpha: 0.02),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
+                        decoration: AppTheme.sanctuaryCard(context.churchColors, radius: 16),
                         child: ListTile(
                           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                           leading: Container(

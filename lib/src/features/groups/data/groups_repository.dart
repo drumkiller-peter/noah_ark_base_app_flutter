@@ -7,7 +7,7 @@ class GroupsRepository {
 
   GroupsRepository({required this.apiClient});
 
-  Future<List<MinistryGroup>> fetchGroups() async {
+  Future<List<Group>> fetchGroups() async {
     try {
       final response = await apiClient.dio.get<dynamic>(ApiEndpoints.groups);
 
@@ -22,12 +22,12 @@ class GroupsRepository {
       }
 
       return items
-          .map((item) => MinistryGroup.fromJson(item as Map<String, dynamic>))
+          .map((item) => Group.fromJson(item as Map<String, dynamic>))
           .toList();
     } catch (_) {
       // Offline fallback groups
       return [
-        MinistryGroup(
+        Group(
           id: 1,
           tenantId: 1,
           name: 'Young Adults Fellowship',
@@ -40,7 +40,7 @@ class GroupsRepository {
           isMember: true,
           createdAt: DateTime.now(),
         ),
-        MinistryGroup(
+        Group(
           id: 2,
           tenantId: 1,
           name: 'Church Worship & Praise Choir',
@@ -53,7 +53,7 @@ class GroupsRepository {
           isMember: false,
           createdAt: DateTime.now(),
         ),
-        MinistryGroup(
+        Group(
           id: 3,
           tenantId: 1,
           name: 'Grace Community Outreach',
@@ -66,7 +66,7 @@ class GroupsRepository {
           isMember: false,
           createdAt: DateTime.now(),
         ),
-        MinistryGroup(
+        Group(
           id: 4,
           tenantId: 1,
           name: 'Women’s Intercessory Prayer Circle',

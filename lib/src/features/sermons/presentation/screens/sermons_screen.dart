@@ -161,7 +161,7 @@ class SermonsScreen extends StatelessWidget {
                               borderRadius: BorderRadius.circular(999),
                               side: BorderSide(
                                 color: state.selectedPreacher == null
-                                    ? Colors.transparent
+                                    ? context.churchColors.primary.withValues(alpha: 0)
                                     : context.churchColors.border,
                               ),
                             ),
@@ -198,7 +198,7 @@ class SermonsScreen extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(999),
                                   side: BorderSide(
                                     color: isSelected
-                                        ? Colors.transparent
+                                        ? context.churchColors.primary.withValues(alpha: 0)
                                         : context.churchColors.border,
                                   ),
                                 ),
@@ -275,20 +275,7 @@ class SermonsScreen extends StatelessWidget {
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: context.churchColors.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: context.churchColors.border.withValues(alpha: 0.7),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: context.churchColors.text.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
+      decoration: AppTheme.sanctuaryCard(context.churchColors, radius: 20),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () => _showSermonDetails(context, sermon),

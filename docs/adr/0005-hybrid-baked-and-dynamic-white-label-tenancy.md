@@ -1,3 +1,7 @@
+---
+status: partly superseded by ADR-0013 (Flutter flavors)
+---
+
 # Hybrid Baked and Dynamic White-Label Tenancy
 
 The client architecture supports both compile-time baked configurations (via `--dart-define=TENANT_KEY=...` with Flutter flavors/schemes for church-specific app store releases) and runtime dynamic tenant resolution (via domain hostname inspection on Web, or church code/QR picker in generic builds).

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:noah_ark_base_app_flutter/src/core/routing/main_shell.dart';
-import 'package:noah_ark_base_app_flutter/src/features/admin/presentation/screens/admin_dashboard_screen.dart';
+import 'package:noah_ark_base_app_flutter/src/features/workspace/presentation/screens/church_workspace_screen.dart';
 import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/screens/login_screen.dart';
 import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/screens/register_screen.dart';
 import 'package:noah_ark_base_app_flutter/src/features/bulletins/presentation/screens/bulletins_screen.dart';
-import 'package:noah_ark_base_app_flutter/src/features/devotional/presentation/screens/devotional_screen.dart';
+import 'package:noah_ark_base_app_flutter/src/features/devotional/presentation/screens/home_screen.dart';
 import 'package:noah_ark_base_app_flutter/src/features/events/presentation/screens/events_screen.dart';
 import 'package:noah_ark_base_app_flutter/src/features/giving/presentation/screens/giving_screen.dart';
 import 'package:noah_ark_base_app_flutter/src/features/groups/presentation/screens/groups_screen.dart';
@@ -31,7 +31,7 @@ GoRouter createAppRouter() {
             routes: [
               GoRoute(
                 path: '/devotional',
-                builder: (context, state) => const DevotionalScreen(),
+                builder: (context, state) => const HomeScreen(),
               ),
             ],
           ),
@@ -97,12 +97,12 @@ GoRouter createAppRouter() {
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,
         path: '/admin',
-        builder: (context, state) => const AdminDashboardScreen(),
+        builder: (context, state) => const ChurchWorkspaceScreen(),
       ),
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,
         path: '/workspace',
-        builder: (context, state) => const AdminDashboardScreen(),
+        builder: (context, state) => const ChurchWorkspaceScreen(),
       ),
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,

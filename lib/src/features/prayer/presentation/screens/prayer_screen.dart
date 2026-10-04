@@ -76,7 +76,7 @@ class _PrayerScreenState extends State<PrayerScreen> with SingleTickerProviderSt
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_rounded, size: 22),
-            tooltip: 'Refresh Prayer Wall',
+            tooltip: 'Refresh Prayer Chain',
             onPressed: () => context
                 .read<PrayerBloc>()
                 .add(const PrayerChainFetchRequested()),
@@ -382,15 +382,25 @@ class _PrayerListView extends StatelessWidget {
   Widget build(BuildContext context) {
     if (prayers.isEmpty) {
       return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32.0),
+        child: Container(
+          margin: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+          decoration: AppTheme.sanctuaryCard(context.churchColors),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.volunteer_activism_outlined,
-                size: 48,
-                color: context.churchColors.textMuted.withValues(alpha: 0.6),
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: context.churchColors.primary.withValues(alpha: 0.10),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.volunteer_activism_rounded,
+                  size: 30,
+                  color: context.churchColors.primary,
+                ),
               ),
               const SizedBox(height: 12),
               Text(
@@ -423,7 +433,7 @@ class _PrayerListView extends StatelessWidget {
                 ),
                 onPressed: onAskForPrayer,
                 icon: const Icon(Icons.add_rounded, size: 16),
-                label: const Text('Submit a Prayer'),
+                label: const Text('Submit a Prayer Request'),
               ),
             ],
           ),
@@ -444,20 +454,7 @@ class _PrayerListView extends StatelessWidget {
 
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
-          decoration: BoxDecoration(
-            color: context.churchColors.surface,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: context.churchColors.border.withValues(alpha: 0.7),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: context.churchColors.text.withValues(alpha: 0.03),
-                blurRadius: 10,
-                offset: const Offset(0, 3),
-              ),
-            ],
-          ),
+          decoration: AppTheme.sanctuaryCard(context.churchColors),
           padding: const EdgeInsets.all(18),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -586,7 +583,7 @@ class _PrayerListView extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      '${prayer.intercessionCount} faithful praying',
+                      '${prayer.intercessionCount} intercessions',
                       style: AppTheme.sans(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
@@ -634,8 +631,8 @@ class _PrayerListView extends StatelessWidget {
                               const SizedBox(width: 6),
                               Text(
                                 prayer.hasInterceded
-                                    ? 'Amen (${prayer.intercessionCount})'
-                                    : 'Amen (${prayer.intercessionCount})',
+                                    ? 'Interceding (${prayer.intercessionCount})'
+                                    : 'Intercede (${prayer.intercessionCount})',
                                 style: AppTheme.sans(
                                   fontSize: 12.5,
                                   fontWeight: FontWeight.w700,

@@ -36,7 +36,7 @@ enum GroupRole {
   }
 }
 
-class MinistryGroup extends Equatable {
+class Group extends Equatable {
   final int id;
   final int tenantId;
   final String name;
@@ -51,7 +51,7 @@ class MinistryGroup extends Equatable {
   final bool isMember;
   final DateTime createdAt;
 
-  const MinistryGroup({
+  const Group({
     required this.id,
     required this.tenantId,
     required this.name,
@@ -67,8 +67,8 @@ class MinistryGroup extends Equatable {
     required this.createdAt,
   });
 
-  factory MinistryGroup.fromJson(Map<String, dynamic> json) {
-    return MinistryGroup(
+  factory Group.fromJson(Map<String, dynamic> json) {
+    return Group(
       id: json['id'] as int,
       tenantId: json['tenant_id'] as int? ?? 1,
       name: json['name'] as String,
@@ -87,11 +87,11 @@ class MinistryGroup extends Equatable {
     );
   }
 
-  MinistryGroup copyWith({
+  Group copyWith({
     bool? isMember,
     int? memberCount,
   }) {
-    return MinistryGroup(
+    return Group(
       id: id,
       tenantId: tenantId,
       name: name,

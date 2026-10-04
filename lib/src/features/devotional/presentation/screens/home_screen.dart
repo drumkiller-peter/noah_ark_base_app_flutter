@@ -15,14 +15,14 @@ import 'package:noah_ark_base_app_flutter/src/features/sermons/presentation/bloc
 import 'package:noah_ark_base_app_flutter/src/core/theme/app_theme.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class DevotionalScreen extends StatefulWidget {
-  const DevotionalScreen({super.key});
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
 
   @override
-  State<DevotionalScreen> createState() => _DevotionalScreenState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _DevotionalScreenState extends State<DevotionalScreen> {
+class _HomeScreenState extends State<HomeScreen> {
   late DateTime _selectedDate;
 
   @override
@@ -207,23 +207,20 @@ class _DevotionalScreenState extends State<DevotionalScreen> {
             ),
             const SizedBox(height: 12),
 
-            // Sunday Worship Spotlight Card
+            // Sunday Worship Spotlight: the one filled moment on the page
             Container(
               decoration: BoxDecoration(
-                color: context.churchColors.surface,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: context.churchColors.border.withValues(alpha: 0.7),
-                ),
+                gradient: AppTheme.heroGradient(context.churchColors),
+                borderRadius: BorderRadius.circular(22),
                 boxShadow: [
                   BoxShadow(
-                    color: context.churchColors.text.withValues(alpha: 0.03),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
+                    color: context.churchColors.primary.withValues(alpha: 0.28),
+                    blurRadius: 24,
+                    offset: const Offset(0, 10),
                   ),
                 ],
               ),
-              padding: const EdgeInsets.all(18),
+              padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -232,30 +229,34 @@ class _DevotionalScreenState extends State<DevotionalScreen> {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: context.churchColors.warning.withValues(alpha: 0.14),
+                          color: context.churchColors.onPrimary.withValues(alpha: 0.16),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
                           Icons.wb_sunny_rounded,
                           size: 18,
-                          color: context.churchColors.warning,
+                          color: context.churchColors.onPrimary,
                         ),
                       ),
                       const SizedBox(width: 10),
-                      Text(
-                        'SUNDAY WORSHIP • 10:00 AM',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.8,
-                          color: context.churchColors.warning,
+                      Expanded(
+                        child: Text(
+                          'SUNDAY WORSHIP • 10:00 AM',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.8,
+                            color: context.churchColors.onPrimary.withValues(alpha: 0.85),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const Spacer(),
+                      const SizedBox(width: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          color: context.churchColors.primary.withValues(alpha: 0.12),
+                          color: context.churchColors.onPrimary,
                           borderRadius: BorderRadius.circular(999),
                         ),
                         child: Text(
@@ -270,38 +271,41 @@ class _DevotionalScreenState extends State<DevotionalScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
                   Text(
                     'Sunday Service & Fellowship',
-                    style: TextStyle(
-                      fontSize: 16,
+                    style: AppTheme.serif(
+                      fontSize: 25,
                       fontWeight: FontWeight.w700,
-                      letterSpacing: -0.2,
-                      color: context.churchColors.text,
+                      letterSpacing: -0.4,
+                      height: 1.2,
+                      color: context.churchColors.onPrimary,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Text(
                     'Worship, communion, and preaching of the Word • Sanctuary & Livestream',
                     style: TextStyle(
                       fontSize: 12.5,
                       height: 1.45,
-                      color: context.churchColors.textMuted,
+                      color: context.churchColors.onPrimary.withValues(alpha: 0.82),
                     ),
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 18),
                   Row(
                     children: [
                       Expanded(
-                        child: FilledButton.tonalIcon(
+                        child: FilledButton.icon(
                           style: FilledButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            backgroundColor: context.churchColors.onPrimary,
+                            foregroundColor: context.churchColors.primary,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
                           icon: const Icon(Icons.auto_stories_rounded, size: 16),
-                          label: const Text('Order of Service', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600)),
+                          label: const Text('Order of Service', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700)),
                           onPressed: () => context.push('/bulletins'),
                         ),
                       ),
@@ -309,19 +313,17 @@ class _DevotionalScreenState extends State<DevotionalScreen> {
                       Expanded(
                         child: OutlinedButton.icon(
                           style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            foregroundColor: context.churchColors.onPrimary,
                             side: BorderSide(
-                              color: context.churchColors.border,
+                              color: context.churchColors.onPrimary.withValues(alpha: 0.5),
                             ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          icon: Icon(Icons.smart_display_rounded, size: 16, color: context.churchColors.secondary),
-                          label: Text(
-                            'Watch Live',
-                            style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: context.churchColors.text),
-                          ),
+                          icon: const Icon(Icons.smart_display_rounded, size: 16),
+                          label: const Text('Watch Live', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700)),
                           onPressed: () => context.push('/sermons'),
                         ),
                       ),
@@ -593,14 +595,31 @@ class _DevotionalScreenState extends State<DevotionalScreen> {
               ),
               const SizedBox(height: 10),
             ],
-            Text(
-              '“${quote.content}”',
-              style: AppTheme.serif(
-                fontSize: 16.5,
-                height: 1.62,
-                fontStyle: FontStyle.italic,
-                fontWeight: FontWeight.w500,
-                color: context.churchColors.text,
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Container(
+                    width: 3,
+                    decoration: BoxDecoration(
+                      color: context.churchColors.primary,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Text(
+                      '“${quote.content}”',
+                      style: AppTheme.serif(
+                        fontSize: 18,
+                        height: 1.6,
+                        fontStyle: FontStyle.italic,
+                        fontWeight: FontWeight.w500,
+                        color: context.churchColors.text,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 16),
@@ -848,7 +867,7 @@ class _DevotionalScreenState extends State<DevotionalScreen> {
                 ),
                 icon: const Icon(Icons.arrow_forward_rounded, size: 14),
                 label: Text(
-                  'Prayer Wall',
+                  'Prayer Chain',
                   style: AppTheme.sans(fontSize: 12, fontWeight: FontWeight.w700),
                 ),
                 onPressed: () => context.push('/prayer'),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:noah_ark_base_app_flutter/src/core/theme/app_theme.dart';
 import 'package:noah_ark_base_app_flutter/src/core/theme/church_colors.dart';
 import 'package:noah_ark_base_app_flutter/src/features/groups/domain/group.dart';
 import 'package:noah_ark_base_app_flutter/src/features/groups/presentation/bloc/groups_bloc.dart';
@@ -12,7 +13,7 @@ class GroupsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Ministry Groups'),
+        title: const Text('Groups'),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -127,17 +128,13 @@ class GroupsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildGroupCard(BuildContext context, MinistryGroup group) {
+  Widget _buildGroupCard(BuildContext context, Group group) {
     final theme = Theme.of(context);
     final badgeColor = _getGroupTypeColor(context, group.groupType);
 
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        side: BorderSide(color: theme.colorScheme.outlineVariant),
-        borderRadius: BorderRadius.circular(14),
-      ),
+      decoration: AppTheme.sanctuaryCard(context.churchColors),
       child: Padding(
         padding: const EdgeInsets.all(18),
         child: Column(
@@ -150,8 +147,11 @@ class GroupsScreen extends StatelessWidget {
                 Expanded(
                   child: Text(
                     group.name,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
+                    style: AppTheme.serif(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                      height: 1.25,
+                      color: context.churchColors.text,
                     ),
                   ),
                 ),
@@ -163,12 +163,8 @@ class GroupsScreen extends StatelessWidget {
                     border: Border.all(color: badgeColor.withAlpha(100)),
                   ),
                   child: Text(
-                    group.groupType.label,
-                    style: TextStyle(
-                      color: badgeColor,
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    group.groupType.label.toUpperCase(),
+                    style: AppTheme.trackingBadge(color: badgeColor, fontSize: 9.5),
                   ),
                 ),
               ],
@@ -223,7 +219,7 @@ class GroupsScreen extends StatelessWidget {
                 ],
               ),
 
-            const Divider(height: 24),
+            Divider(height: 24, color: context.churchColors.border.withValues(alpha: 0.5)),
 
             // Action row: Member count + Join/Leave button
             Row(

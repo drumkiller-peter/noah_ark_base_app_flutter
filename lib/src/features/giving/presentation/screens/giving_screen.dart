@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:noah_ark_base_app_flutter/src/core/theme/app_theme.dart';
 import 'package:noah_ark_base_app_flutter/src/core/theme/church_colors.dart';
 import 'package:noah_ark_base_app_flutter/src/features/giving/domain/fund.dart';
 import 'package:noah_ark_base_app_flutter/src/features/giving/presentation/bloc/giving_bloc.dart';
@@ -38,111 +39,201 @@ class GivingScreen extends StatelessWidget {
             final currencyFormat = NumberFormat.currency(symbol: 'NPR ', decimalDigits: 0);
 
             return ListView(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
               children: [
-                const Text(
-                  'Church Funds & Ministry Sectors',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 10),
+                _buildGivingHero(context),
+                const SizedBox(height: 26),
+                _buildSectionHeader(context, 'Church Funds'),
+                const SizedBox(height: 12),
                 if (state.funds.isEmpty)
-                  const Text('No public funds listed.')
+                  Text(
+                    'No public funds listed.',
+                    style: TextStyle(color: context.churchColors.textMuted),
+                  )
                 else
-                  ...state.funds.map((fund) {
-                    return Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Row(
-                          children: [
-                            CircleAvatar(
-                              backgroundColor: context.churchColors.primary.withValues(alpha: 0.12),
-                              foregroundColor: context.churchColors.primary,
-                              child: const Icon(Icons.savings, size: 20),
-                            ),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    fund.name,
-                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                                  ),
-                                  if (fund.description != null)
-                                    Text(
-                                      fund.description!,
-                                      style: TextStyle(color: context.churchColors.textMuted, fontSize: 12),
-                                    ),
-                                ],
-                              ),
-                            ),
-                            if (fund.visibility != FundVisibility.private && fund.balance != null)
-                              Text(
-                                currencyFormat.format(fund.balance),
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: context.churchColors.primary,
-                                  fontSize: 14,
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }),
-                const SizedBox(height: 24),
-                const Text(
-                  'My Giving Statement / Receipts',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 10),
+                  ...state.funds.map((fund) => _buildFundCard(context, fund, currencyFormat)),
+                const SizedBox(height: 22),
+                _buildSectionHeader(context, 'My Giving Statement / Receipts'),
+                const SizedBox(height: 12),
                 if (state.myDonations.isEmpty)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 20.0),
-                    child: Center(
-                      child: Text(
-                        'No donations recorded under this account yet.',
-                        style: TextStyle(color: context.churchColors.textMuted),
-                      ),
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: AppTheme.sanctuaryCard(context.churchColors),
+                    child: Text(
+                      'No donations recorded under this account yet.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: context.churchColors.textMuted),
                     ),
                   )
                 else
-                  ...state.myDonations.map((receipt) {
-                    return Card(
-                      child: ListTile(
-                        leading: Icon(Icons.receipt_long, color: context.churchColors.secondary),
-                        title: Text(
-                          currencyFormat.format(receipt.amount),
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Text(
-                          '${receipt.paymentMethod.toUpperCase()} • ${DateFormat.yMMMd().format(receipt.receivedAt)}',
-                          style: const TextStyle(fontSize: 12),
-                        ),
-                        trailing: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: context.churchColors.success.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            receipt.status.toUpperCase(),
-                            style: TextStyle(
-                              color: context.churchColors.success,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 10,
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  }),
-                const SizedBox(height: 80),
+                  ...state.myDonations.map((receipt) => _buildReceiptCard(context, receipt, currencyFormat)),
+                const SizedBox(height: 96),
               ],
             );
           }
           return const SizedBox.shrink();
         },
+      ),
+    );
+  }
+
+  Widget _buildGivingHero(BuildContext context) {
+    final colors = context.churchColors;
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: AppTheme.heroGradient(colors),
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: [
+          BoxShadow(
+            color: colors.primary.withValues(alpha: 0.28),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'TITHES & OFFERINGS',
+            style: AppTheme.trackingBadge(color: colors.onPrimary.withValues(alpha: 0.85)),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'Support the work of the church',
+            style: AppTheme.serif(
+              fontSize: 25,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.4,
+              height: 1.2,
+              color: colors.onPrimary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(BuildContext context, String title) {
+    return Text(
+      title,
+      style: AppTheme.serif(
+        fontSize: 20,
+        fontWeight: FontWeight.w700,
+        letterSpacing: -0.3,
+        color: context.churchColors.text,
+      ),
+    );
+  }
+
+  Widget _buildFundCard(BuildContext context, ChurchFund fund, NumberFormat currencyFormat) {
+    final colors = context.churchColors;
+    final showBalance = fund.visibility != FundVisibility.private && fund.balance != null;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: AppTheme.sanctuaryCard(colors),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: colors.primary.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(Icons.savings_outlined, size: 22, color: colors.primary),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  fund.name,
+                  style: AppTheme.serif(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    height: 1.25,
+                    color: colors.text,
+                  ),
+                ),
+                if (fund.description != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    fund.description!,
+                    style: TextStyle(color: colors.textMuted, fontSize: 12.5, height: 1.45),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          if (showBalance) ...[
+            const SizedBox(width: 10),
+            Text(
+              currencyFormat.format(fund.balance),
+              style: AppTheme.serif(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: colors.primary,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReceiptCard(BuildContext context, DonationReceipt receipt, NumberFormat currencyFormat) {
+    final colors = context.churchColors;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: AppTheme.sanctuaryCard(colors),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: colors.secondary.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(Icons.receipt_long_rounded, size: 22, color: colors.secondary),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  currencyFormat.format(receipt.amount),
+                  style: AppTheme.serif(fontSize: 17, fontWeight: FontWeight.w700, color: colors.text),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  '${receipt.paymentMethod.toUpperCase()} • ${DateFormat.yMMMd().format(receipt.receivedAt)}',
+                  style: TextStyle(color: colors.textMuted, fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: colors.success.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Text(
+              receipt.status.toUpperCase(),
+              style: AppTheme.trackingBadge(color: colors.success, fontSize: 10),
+            ),
+          ),
+        ],
       ),
     );
   }

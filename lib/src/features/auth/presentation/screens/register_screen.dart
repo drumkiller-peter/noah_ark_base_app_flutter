@@ -58,66 +58,71 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 // Top Hero Section
                 Expanded(
                   flex: 3,
-                  child: Stack(
-                    children: [
-                      if (Navigator.canPop(context))
-                        Positioned(
-                          top: 8,
-                          left: 8,
-                          child: IconButton(
-                            icon: Icon(
-                              Icons.arrow_back_rounded,
-                              color: context.churchColors.onPrimary,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: AppTheme.heroGradient(context.churchColors),
+                    ),
+                    child: Stack(
+                      children: [
+                        if (Navigator.canPop(context))
+                          Positioned(
+                            top: 8,
+                            left: 8,
+                            child: IconButton(
+                              icon: Icon(
+                                Icons.arrow_back_rounded,
+                                color: context.churchColors.onPrimary,
+                              ),
+                              onPressed: () => Navigator.maybePop(context),
                             ),
-                            onPressed: () => Navigator.maybePop(context),
                           ),
-                        ),
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              width: 54,
-                              height: 54,
-                              decoration: BoxDecoration(
-                                color: context.churchColors.onPrimary.withValues(alpha: 0.16),
-                                borderRadius: BorderRadius.circular(18),
-                                border: Border.all(
-                                  color: context.churchColors.onPrimary.withValues(alpha: 0.25),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                width: 54,
+                                height: 54,
+                                decoration: BoxDecoration(
+                                  color: context.churchColors.onPrimary.withValues(alpha: 0.16),
+                                  borderRadius: BorderRadius.circular(18),
+                                  border: Border.all(
+                                    color: context.churchColors.onPrimary.withValues(alpha: 0.25),
+                                  ),
+                                ),
+                                child: Icon(
+                                  Icons.person_add_alt_1_rounded,
+                                  size: 28,
+                                  color: context.churchColors.onPrimary,
                                 ),
                               ),
-                              child: Icon(
-                                Icons.person_add_alt_1_rounded,
-                                size: 28,
-                                color: context.churchColors.onPrimary,
+                              const SizedBox(height: 12),
+                              Text(
+                                appConfig.churchName,
+                                textAlign: TextAlign.center,
+                                style: AppTheme.serif(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: -0.3,
+                                  color: context.churchColors.onPrimary,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              appConfig.churchName,
-                              textAlign: TextAlign.center,
-                              style: AppTheme.serif(
-                                fontSize: 24,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: -0.3,
-                                color: context.churchColors.onPrimary,
+                              const SizedBox(height: 4),
+                              Text(
+                                'Connect with our church family',
+                                textAlign: TextAlign.center,
+                                style: AppTheme.sans(
+                                  fontSize: 13,
+                                  color: context.churchColors.onPrimary.withValues(alpha: 0.85),
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Connect with our church family',
-                              textAlign: TextAlign.center,
-                              style: AppTheme.sans(
-                                fontSize: 13,
-                                color: context.churchColors.onPrimary.withValues(alpha: 0.85),
-                              ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
 

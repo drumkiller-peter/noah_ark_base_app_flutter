@@ -4,6 +4,12 @@ A white-label church app platform: one shared backend serves many churches, each
 
 ## Language
 
+### Churches
+
+**Church**:
+A congregation on the platform, with its own Members, Theme, and Member App. Everything on the platform belongs to exactly one church, except Super Admins.
+_Avoid_: tenant, organization
+
 ### Roles
 
 Each person holds exactly one role in their church. A Super Admin may give anyone any role, a Pastor may give any church role, and an Admin may make someone only an Elder or a Member.
@@ -120,14 +126,22 @@ _Avoid_: archived, removed, deleted
 
 ### Apps
 
+**Member App**:
+The app a church's Members use, published under that church's own name and icon and tied to it by its App Key. Every church's Member App comes from the same shared codebase.
+_Avoid_: white-label app, tenant app, church app
+
+**App Key**:
+The public identifier that ties a Member App to its church. It is not a secret.
+_Avoid_: tenant key, church code
+
 **Church Workspace**:
-The web workspace where people holding management rights in a church manage it, each seeing only what their role allows. Members use their church's member app instead.
+The web workspace where people holding management rights in a church manage it, each seeing only what their role allows. Members use their church's Member App instead.
 _Avoid_: CMS, admin panel, dashboard, church desktop, back office
 
 **Theme**:
-The light- and dark-mode colors a church's member app is drawn in, changeable by that church's Pastors and Admins or a Super Admin and visible to anyone, signed in or not. The app's icon, store name, and splash screen belong to each church's app build, not its Theme.
+The light- and dark-mode colors and the logo a church's Member App is drawn in, changeable by that church's Pastors and Admins or a Super Admin and visible to anyone, signed in or not. The app's icon, store name, and splash screen belong to its Member App, not its Theme.
 _Avoid_: branding, skin, palette, colors
 
 **Default Theme**:
-The platform's colors, which a church's app uses for every color its Theme leaves unchosen. When the platform changes its Default Theme, every church follows it for the colors it never chose.
+The platform's colors, which a church's Member App uses for every color its Theme leaves unchosen. When the platform changes its Default Theme, every church follows it for the colors it never chose.
 _Avoid_: base theme, fallback colors, Noah Ark theme

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:noah_ark_base_app_flutter/src/core/theme/app_theme.dart';
 import 'package:noah_ark_base_app_flutter/src/core/theme/church_colors.dart';
 import 'package:noah_ark_base_app_flutter/src/features/events/domain/event.dart';
 import 'package:noah_ark_base_app_flutter/src/features/events/presentation/bloc/events_bloc.dart';
@@ -129,122 +130,147 @@ class _EventsScreenState extends State<EventsScreen> {
 
   Widget _buildEventCard(BuildContext context, ChurchEvent event) {
     final theme = Theme.of(context);
+    final colors = context.churchColors;
     final dateStr = DateFormat('EEEE, MMMM d, yyyy').format(event.startsAt);
     final timeStr = DateFormat('h:mm a').format(event.startsAt);
 
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        side: BorderSide(color: theme.colorScheme.outlineVariant),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(18.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: context.churchColors.primary.withAlpha(25),
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: context.churchColors.primary.withAlpha(80)),
-                  ),
-                  child: Text(
-                    'CHURCH-WIDE',
-                    style: TextStyle(
-                      color: context.churchColors.primary,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 10,
-                    ),
-                  ),
-                ),
-                Text(
-                  timeStr,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: context.churchColors.primary,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Text(
-              event.title,
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                Icon(Icons.calendar_today_outlined, size: 14, color: context.churchColors.textMuted),
-                const SizedBox(width: 6),
-                Text(
-                  dateStr,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: context.churchColors.textMuted,
-                  ),
-                ),
-              ],
-            ),
-            if (event.description != null && event.description!.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Text(
-                event.description!,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                  height: 1.4,
-                ),
-              ),
-            ],
-            if (event.location != null) ...[
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Icon(Icons.location_on_outlined, size: 16, color: context.churchColors.secondary),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      event.location!,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-            const Divider(height: 24),
-            Row(
-              children: [
-                Row(
+      padding: const EdgeInsets.all(18),
+      decoration: AppTheme.sanctuaryCard(colors),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildDateTile(colors, event.startsAt),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.people_alt_outlined, size: 18, color: context.churchColors.primary),
-                    const SizedBox(width: 6),
-                    Text(
-                      '${event.attendingCount} attending',
-                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: colors.primary.withAlpha(25),
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: Text(
+                            'CHURCH-WIDE',
+                            style: AppTheme.trackingBadge(color: colors.primary, fontSize: 9.5),
+                          ),
+                        ),
+                        const Spacer(),
+                        Text(
+                          timeStr,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: colors.primary,
+                          ),
+                        ),
+                      ],
                     ),
-                    if (event.maybeCount > 0) ...[
-                      const SizedBox(width: 8),
-                      Text(
-                        '(${event.maybeCount} maybe)',
-                        style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurfaceVariant),
+                    const SizedBox(height: 8),
+                    Text(
+                      event.title,
+                      style: AppTheme.serif(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        height: 1.25,
+                        color: colors.text,
                       ),
-                    ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      dateStr,
+                      style: theme.textTheme.bodySmall?.copyWith(color: colors.textMuted),
+                    ),
                   ],
                 ),
-                const Spacer(),
-                _buildRsvpButton(context, event),
+              ),
+            ],
+          ),
+          if (event.description != null && event.description!.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Text(
+              event.description!,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+                height: 1.4,
+              ),
+            ),
+          ],
+          if (event.location != null) ...[
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Icon(Icons.location_on_outlined, size: 16, color: colors.secondary),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    event.location!,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
               ],
             ),
           ],
-        ),
+          Divider(height: 24, color: colors.border.withValues(alpha: 0.5)),
+          Row(
+            children: [
+              Icon(Icons.people_alt_outlined, size: 18, color: colors.primary),
+              const SizedBox(width: 6),
+              Text(
+                '${event.attendingCount} attending',
+                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+              ),
+              if (event.maybeCount > 0) ...[
+                const SizedBox(width: 8),
+                Text(
+                  '(${event.maybeCount} maybe)',
+                  style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurfaceVariant),
+                ),
+              ],
+              const Spacer(),
+              _buildRsvpButton(context, event),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// The day as a small calendar tile: month above a serif day number.
+  Widget _buildDateTile(ChurchColors colors, DateTime date) {
+    return Container(
+      width: 56,
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      decoration: BoxDecoration(
+        color: colors.primary.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        children: [
+          Text(
+            DateFormat('MMM').format(date).toUpperCase(),
+            style: AppTheme.trackingBadge(color: colors.primary, fontSize: 10),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            DateFormat('d').format(date),
+            style: AppTheme.serif(
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
+              height: 1.1,
+              color: colors.text,
+            ),
+          ),
+        ],
       ),
     );
   }

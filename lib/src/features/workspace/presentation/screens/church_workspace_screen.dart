@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:noah_ark_base_app_flutter/src/core/theme/app_theme.dart';
 import 'package:noah_ark_base_app_flutter/src/core/theme/church_colors.dart';
 import 'package:noah_ark_base_app_flutter/src/features/auth/domain/user.dart';
 import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:noah_ark_base_app_flutter/src/features/giving/presentation/bloc/giving_bloc.dart';
 
-class AdminDashboardScreen extends StatelessWidget {
-  const AdminDashboardScreen({super.key});
+class ChurchWorkspaceScreen extends StatelessWidget {
+  const ChurchWorkspaceScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -43,10 +44,10 @@ class AdminDashboardScreen extends StatelessWidget {
                           ),
                     ),
                     const SizedBox(height: 8),
-                    const Text(
+                    Text(
                       'Access is restricted to verified church pastors, administrators, and treasurers.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.grey),
+                      style: TextStyle(color: context.churchColors.textMuted),
                     ),
                   ],
                 ),
@@ -99,11 +100,9 @@ class AdminDashboardScreen extends StatelessWidget {
   }
 
   Widget _buildHeaderCard(BuildContext context, User user, String todayStr) {
-    return Card(
-      elevation: 0,
-      color: context.churchColors.primary.withAlpha(20),
-      shape: RoundedRectangleBorder(
-        side: BorderSide(color: context.churchColors.primary, width: 1.2),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: AppTheme.heroGradient(context.churchColors),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Padding(
@@ -112,10 +111,10 @@ class AdminDashboardScreen extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 30,
-              backgroundColor: context.churchColors.primary,
+              backgroundColor: context.churchColors.onPrimary,
               child: Text(
                 user.fullName.isNotEmpty ? user.fullName[0].toUpperCase() : 'P',
-                style: TextStyle(fontSize: 24, color: context.churchColors.onPrimary, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 24, color: context.churchColors.primary, fontWeight: FontWeight.bold),
               ),
             ),
             const SizedBox(width: 16),
@@ -125,7 +124,7 @@ class AdminDashboardScreen extends StatelessWidget {
                 children: [
                   Text(
                     user.fullName,
-                    style: const TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold, color: context.churchColors.onPrimary),
                   ),
                   const SizedBox(height: 4),
                   Row(
@@ -133,18 +132,18 @@ class AdminDashboardScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                          color: context.churchColors.primary,
+                          color: context.churchColors.onPrimary,
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
                           user.role.value.toUpperCase(),
-                          style: TextStyle(color: context.churchColors.onPrimary, fontSize: 10, fontWeight: FontWeight.bold),
+                          style: TextStyle(color: context.churchColors.primary, fontSize: 10, fontWeight: FontWeight.bold),
                         ),
                       ),
                       const SizedBox(width: 8),
                       Text(
                         todayStr,
-                        style: const TextStyle(color: Colors.grey, fontSize: 12),
+                        style: TextStyle(color: context.churchColors.onPrimary.withValues(alpha: 0.8), fontSize: 12),
                       ),
                     ],
                   ),
@@ -154,7 +153,11 @@ class AdminDashboardScreen extends StatelessWidget {
             Wrap(
               spacing: 8,
               children: [
-                FilledButton.tonalIcon(
+                FilledButton.icon(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: context.churchColors.onPrimary,
+                    foregroundColor: context.churchColors.primary,
+                  ),
                   icon: const Icon(Icons.add, size: 18),
                   label: const Text('Add Event'),
                   onPressed: () => context.push('/events'),
@@ -199,7 +202,7 @@ class AdminDashboardScreen extends StatelessWidget {
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
-        side: BorderSide(color: theme.colorScheme.outlineVariant),
+        side: BorderSide(color: context.churchColors.border.withValues(alpha: 0.7)),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Padding(
@@ -255,7 +258,7 @@ class AdminDashboardScreen extends StatelessWidget {
         Card(
           elevation: 0,
           shape: RoundedRectangleBorder(
-            side: BorderSide(color: theme.colorScheme.outlineVariant),
+            side: BorderSide(color: context.churchColors.border.withValues(alpha: 0.7)),
             borderRadius: BorderRadius.circular(14),
           ),
           child: Padding(
@@ -301,7 +304,7 @@ class AdminDashboardScreen extends StatelessWidget {
             return Card(
               elevation: 0,
               shape: RoundedRectangleBorder(
-                side: BorderSide(color: theme.colorScheme.outlineVariant),
+                side: BorderSide(color: context.churchColors.border.withValues(alpha: 0.7)),
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Padding(
@@ -352,7 +355,7 @@ class AdminDashboardScreen extends StatelessWidget {
         Card(
           elevation: 0,
           shape: RoundedRectangleBorder(
-            side: BorderSide(color: theme.colorScheme.outlineVariant),
+            side: BorderSide(color: context.churchColors.border.withValues(alpha: 0.7)),
             borderRadius: BorderRadius.circular(14),
           ),
           child: Padding(
@@ -401,7 +404,7 @@ class AdminDashboardScreen extends StatelessWidget {
         Card(
           elevation: 0,
           shape: RoundedRectangleBorder(
-            side: BorderSide(color: theme.colorScheme.outlineVariant),
+            side: BorderSide(color: context.churchColors.border.withValues(alpha: 0.7)),
             borderRadius: BorderRadius.circular(14),
           ),
           child: Padding(
@@ -416,7 +419,7 @@ class AdminDashboardScreen extends StatelessWidget {
                 const SizedBox(height: 12),
                 _buildToolTile(context, Icons.newspaper, 'Weekly Bulletins', 'Publish service orders & alerts', '/bulletins'),
                 _buildToolTile(context, Icons.video_library, 'Sermons & Media', 'Manage YouTube catalog', '/sermons'),
-                _buildToolTile(context, Icons.group_work, 'Ministry Fellowships', 'Oversee group rosters', '/groups'),
+                _buildToolTile(context, Icons.group_work, 'Groups', 'Oversee group rosters', '/groups'),
                 _buildToolTile(context, Icons.menu_book, 'Bilingual Hymn Book', 'Catalogue lyrics & audio', '/hymns'),
               ],
             ),

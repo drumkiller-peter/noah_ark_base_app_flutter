@@ -158,13 +158,7 @@ class BulletinsScreen extends StatelessWidget {
                   else
                     Container(
                       padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: context.churchColors.surface,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: context.churchColors.border.withValues(alpha: 0.7),
-                        ),
-                      ),
+                      decoration: AppTheme.sanctuaryCard(context.churchColors, radius: 20),
                       child: Center(
                         child: Text(
                           'No published bulletins available.',
@@ -190,13 +184,7 @@ class BulletinsScreen extends StatelessWidget {
                   if (state.regularAnnouncements.isEmpty)
                     Container(
                       padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: context.churchColors.surface,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: context.churchColors.border.withValues(alpha: 0.7),
-                        ),
-                      ),
+                      decoration: AppTheme.sanctuaryCard(context.churchColors, radius: 20),
                       child: Center(
                         child: Text(
                           'No upcoming announcements.',
@@ -291,20 +279,7 @@ class BulletinsScreen extends StatelessWidget {
     final weekStr = DateFormat('EEEE, MMMM d, yyyy').format(bulletin.weekOf);
 
     return Container(
-      decoration: BoxDecoration(
-        color: context.churchColors.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: context.churchColors.border.withValues(alpha: 0.7),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: context.churchColors.text.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
+      decoration: AppTheme.sanctuaryCard(context.churchColors, radius: 20),
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -411,13 +386,7 @@ class BulletinsScreen extends StatelessWidget {
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: context.churchColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: context.churchColors.border.withValues(alpha: 0.7),
-        ),
-      ),
+      decoration: AppTheme.sanctuaryCard(context.churchColors, radius: 16),
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

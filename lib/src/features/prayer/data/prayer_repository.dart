@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:noah_ark_base_app_flutter/src/core/network/api_client.dart';
 import 'package:noah_ark_base_app_flutter/src/core/network/api_endpoints.dart';
 import 'package:noah_ark_base_app_flutter/src/features/prayer/domain/prayer_request.dart';
@@ -9,67 +10,119 @@ class PrayerRepository {
 
   Future<List<PrayerRequest>> getPrayerChain() async {
     try {
-      final response = await apiClient.dio.get<Map<String, dynamic>>(
-        ApiEndpoints.prayers,
-        queryParameters: {'page': 1, 'page_size': 50, 'is_private': false},
+      final response = await apiClient.dio.get<dynamic>(
+        ApiEndpoints.prayerChain,
+        queryParameters: {'page': 1, 'page_size': 50},
       );
 
-      if (response.statusCode == 200 && response.data != null) {
-        final items = (response.data!['items'] as List<dynamic>?) ?? [];
-        return items
-            .map((item) => PrayerRequest.fromJson(item as Map<String, dynamic>))
-            .toList();
+      final List<dynamic> items;
+      if (response.data is Map<String, dynamic> &&
+          response.data['items'] != null) {
+        items = response.data['items'] as List<dynamic>;
+      } else if (response.data is List) {
+        items = response.data as List<dynamic>;
+      } else {
+        items = [];
       }
-    } catch (_) {}
-    return [];
+
+      return items
+          .map((item) => PrayerRequest.fromJson(item as Map<String, dynamic>))
+          .toList();
+    } catch (_) {
+      return [];
+    }
   }
 
   Future<List<PrayerRequest>> getMyPrivatePrayers() async {
     try {
-      final response = await apiClient.dio.get<Map<String, dynamic>>(
-        ApiEndpoints.prayers,
-        queryParameters: {'page': 1, 'page_size': 50, 'is_private': true},
+      final response = await apiClient.dio.get<dynamic>(
+        ApiEndpoints.privatePrayers,
+        queryParameters: {'page': 1, 'page_size': 50},
       );
 
-      if (response.statusCode == 200 && response.data != null) {
-        final items = (response.data!['items'] as List<dynamic>?) ?? [];
-        return items
-            .map((item) => PrayerRequest.fromJson(item as Map<String, dynamic>))
-            .toList();
+      final List<dynamic> items;
+      if (response.data is Map<String, dynamic> &&
+          response.data['items'] != null) {
+        items = response.data['items'] as List<dynamic>;
+      } else if (response.data is List) {
+        items = response.data as List<dynamic>;
+      } else {
+        items = [];
       }
-    } catch (_) {}
-    return [];
+
+      return items
+          .map((item) => PrayerRequest.fromJson(item as Map<String, dynamic>))
+          .toList();
+    } catch (_) {
+      return [];
+    }
   }
 
   Future<PrayerRequest> createPrayerRequest({
-    required String title,
+    String? title,
     required String content,
     required bool isPrivate,
     required bool isAnonymous,
     int? assignedPastorId,
   }) async {
-    final response = await apiClient.dio.post<Map<String, dynamic>>(
-      ApiEndpoints.prayers,
-      data: {
-        'title': title,
-        'content': content,
-        'is_private': isPrivate,
-        'is_anonymous': isAnonymous,
-        'assigned_pastor_id': ?assignedPastorId,
-      },
-    );
+    final Response<dynamic> response;
+    if (isPrivate) {
+      if (assignedPastorId == null) {
+        throw ArgumentError('assignedPastorId is required for Private Prayer Requests');
+      }
+      response = await apiClient.dio.post<dynamic>(
+        ApiEndpoints.privatePrayers,
+        data: {
+          'content': content,
+          'assigned_pastor_id': assignedPastorId,
+        },
+      );
+    } else {
+      response = await apiClient.dio.post<dynamic>(
+        ApiEndpoints.prayerChain,
+        data: {
+          'content': content,
+          'is_anonymous': isAnonymous,
+        },
+      );
+    }
 
-    if (response.statusCode == 201 && response.data != null) {
-      return PrayerRequest.fromJson(response.data!);
+    if (response.data != null && response.data is Map<String, dynamic>) {
+      return PrayerRequest.fromJson(response.data as Map<String, dynamic>);
     }
     throw Exception('Failed to create prayer request');
   }
 
   Future<void> toggleIntercession(int prayerId, bool intercede) async {
     if (intercede) {
-      await apiClient.dio.post<void>(ApiEndpoints.prayerIntercession(prayerId));
+      await apiClient.dio.post<dynamic>(ApiEndpoints.prayerIntercessions(prayerId));
     } else {
-      await apiClient.dio.delete<void>(ApiEndpoints.prayerIntercession(prayerId));
+      await apiClient.dio.delete<dynamic>(ApiEndpoints.prayerIntercessions(prayerId));
+    }
+  }
+
+  Future<List<PastoralPrayerNote>> getPastoralPrayers(int prayerId) async {
+    try {
+      final response = await apiClient.dio.get<dynamic>(
+        ApiEndpoints.privatePastoralPrayers(prayerId),
+        queryParameters: {'page': 1, 'page_size': 50},
+      );
+
+      final List<dynamic> items;
+      if (response.data is Map<String, dynamic> &&
+          response.data['items'] != null) {
+        items = response.data['items'] as List<dynamic>;
+      } else if (response.data is List) {
+        items = response.data as List<dynamic>;
+      } else {
+        items = [];
+      }
+
+      return items
+          .map((item) => PastoralPrayerNote.fromJson(item as Map<String, dynamic>))
+          .toList();
+    } catch (_) {
+      return [];
     }
   }
 }

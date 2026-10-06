@@ -76,21 +76,29 @@ class PrayerRequest extends Equatable {
 
   factory PrayerRequest.fromJson(Map<String, dynamic> json) {
     final rawNotes = (json['pastoral_notes'] as List<dynamic>?) ?? [];
+    final rawContent = json['content'] as String? ?? '';
+    final scope = json['scope'] as String?;
+    final isPrivate = scope == 'private' || (json['is_private'] as bool? ?? false);
+    final title = (json['title'] as String?) ??
+        (rawContent.length > 50 ? '${rawContent.substring(0, 50)}...' : rawContent);
+
     return PrayerRequest(
       id: json['id'] as int,
-      title: json['title'] as String,
-      content: json['content'] as String,
-      isPrivate: json['is_private'] as bool? ?? false,
+      title: title.isNotEmpty ? title : 'Prayer Request',
+      content: rawContent,
+      isPrivate: isPrivate,
       isAnonymous: json['is_anonymous'] as bool? ?? false,
       assignedPastorId: json['assigned_pastor_id'] as int?,
       authorName: json['author_name'] as String?,
       status: PrayerStatus.fromString(json['status'] as String? ?? 'open'),
-      intercessionCount: json['intercession_count'] as int? ?? 0,
-      hasInterceded: json['has_interceded'] as bool? ?? false,
+      intercessionCount: (json['pray_count'] ?? json['intercession_count'] ?? 0) as int,
+      hasInterceded: (json['is_interceding'] ?? json['has_interceded'] ?? false) as bool,
       pastoralNotes: rawNotes
           .map((n) => PastoralPrayerNote.fromJson(n as Map<String, dynamic>))
           .toList(),
-      createdAt: DateTime.parse(json['created_at'] as String),
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'] as String)
+          : DateTime.now(),
     );
   }
 

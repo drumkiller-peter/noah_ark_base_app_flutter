@@ -1,20 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:noah_ark_base_app_flutter/src/core/routing/main_shell.dart';
-import 'package:noah_ark_base_app_flutter/src/features/workspace/presentation/screens/church_workspace_screen.dart';
 import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/screens/login_screen.dart';
 import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/screens/register_screen.dart';
 import 'package:noah_ark_base_app_flutter/src/features/bulletins/presentation/screens/bulletins_screen.dart';
 import 'package:noah_ark_base_app_flutter/src/features/devotional/presentation/screens/home_screen.dart';
 import 'package:noah_ark_base_app_flutter/src/features/events/presentation/screens/events_screen.dart';
 import 'package:noah_ark_base_app_flutter/src/features/giving/presentation/screens/giving_screen.dart';
+import 'package:noah_ark_base_app_flutter/src/features/groups/domain/group.dart';
+import 'package:noah_ark_base_app_flutter/src/features/groups/presentation/screens/group_detail_screen.dart';
 import 'package:noah_ark_base_app_flutter/src/features/groups/presentation/screens/groups_screen.dart';
 import 'package:noah_ark_base_app_flutter/src/features/hymns/presentation/screens/hymns_screen.dart';
 import 'package:noah_ark_base_app_flutter/src/features/prayer/presentation/screens/prayer_screen.dart';
 import 'package:noah_ark_base_app_flutter/src/features/sermons/presentation/screens/sermons_screen.dart';
 import 'package:noah_ark_base_app_flutter/src/features/watch/presentation/screens/watch_glance_screen.dart';
+import 'package:noah_ark_base_app_flutter/src/features/workspace/presentation/screens/church_workspace_screen.dart';
 
-final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
+final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(
+  debugLabel: 'root',
+);
 
 /// Declarative GoRouter configuration conforming to ADR 0008 and ADR 0005.
 GoRouter createAppRouter() {
@@ -83,6 +87,32 @@ GoRouter createAppRouter() {
         parentNavigatorKey: _rootNavigatorKey,
         path: '/groups',
         builder: (context, state) => const GroupsScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/groups/:id',
+        builder: (context, state) {
+          final extra = state.extra;
+          final idStr = state.pathParameters['id'];
+          final id = int.tryParse(idStr ?? '') ?? 0;
+          if (extra is Group) {
+            return GroupDetailScreen(group: extra);
+          }
+          return GroupDetailScreen(
+            group: Group(
+              id: id,
+              tenantId: 1,
+              name: 'Group #$id',
+              groupType: GroupType.other,
+              isOpen: true,
+              isArchived: false,
+              memberCount: 0,
+              isMember: false,
+              isLeader: false,
+              createdAt: DateTime.now(),
+            ),
+          );
+        },
       ),
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,

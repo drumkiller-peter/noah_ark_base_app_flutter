@@ -125,42 +125,27 @@ class GivingRepository {
   Future<DonationReceipt> recordManualDonation({
     required double amount,
     required int fundId,
-    required String paymentMethod, // 'cash', 'cheque', 'bank_transfer', 'esewa', 'khalti'
-    String? referenceId, // slip or cheque number
+    required String paymentMethod,
+    String? referenceId,
     String? note,
     bool isAnonymous = false,
   }) async {
-    try {
-      final response = await apiClient.dio.post<dynamic>(
-        ApiEndpoints.donations,
-        data: {
-          'amount': amount,
-          'currency': 'NPR',
-          'fund_id': fundId,
-          'payment_gateway': paymentMethod,
-          'reference_id': referenceId ?? 'MANUAL-${DateTime.now().millisecondsSinceEpoch}',
-          'note': note,
-          'is_anonymous': isAnonymous,
-        },
-      );
-
-      if (response.data != null) {
-        return DonationReceipt.fromJson(response.data as Map<String, dynamic>);
-      }
-    } catch (_) {
-      // Offline fallback success receipt
-    }
-
-    return DonationReceipt(
-      id: DateTime.now().millisecondsSinceEpoch % 100000,
-      amount: amount,
-      currency: 'NPR',
-      fundId: fundId,
-      fundName: 'Church Fund',
-      paymentMethod: paymentMethod,
-      status: 'completed',
-      referenceId: referenceId ?? 'REF-${DateTime.now().millisecondsSinceEpoch}',
-      receivedAt: DateTime.now(),
+    final response = await apiClient.dio.post<dynamic>(
+      ApiEndpoints.donations,
+      data: {
+        'amount': amount,
+        'currency': 'NPR',
+        'fund_id': fundId,
+        'payment_gateway': paymentMethod,
+        'reference_id': referenceId ?? 'MANUAL-${DateTime.now().millisecondsSinceEpoch}',
+        'note': ?note,
+        'is_anonymous': isAnonymous,
+      },
     );
+
+    if (response.data != null && response.data is Map<String, dynamic>) {
+      return DonationReceipt.fromJson(response.data as Map<String, dynamic>);
+    }
+    throw Exception('Failed to record donation');
   }
 }

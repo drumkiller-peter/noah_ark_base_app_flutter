@@ -30,10 +30,15 @@ class ApiEndpoints {
   static String donationDetails(int id) => '/donations/$id';
 
   // Pastoral Care & Prayer Requests
-  static const String prayers = '/prayers';
+  static const String prayerChain = '/prayers/chain';
+  static const String privatePrayers = '/prayers/private';
   static String prayerDetails(int id) => '/prayers/$id';
-  static String prayerIntercession(int id) => '/prayers/$id/intercede';
-  static String prayerPastoralNotes(int id) => '/prayers/$id/pastoral-notes';
+  static String prayerAnswer(int id) => '/prayers/$id/answer';
+  static String prayerClose(int id) => '/prayers/$id/close';
+  static String prayerReopen(int id) => '/prayers/$id/reopen';
+  static String prayerIntercessions(int id) => '/prayers/$id/intercessions';
+  static String privatePrayerPastor(int id) => '/prayers/private/$id/pastor';
+  static String privatePastoralPrayers(int id) => '/prayers/private/$id/pastoral-prayers';
 
   // Worship & Hymns
   static const String hymns = '/hymns';
@@ -43,7 +48,13 @@ class ApiEndpoints {
   // Fellowships & Groups
   static const String groups = '/groups';
   static String groupDetails(int id) => '/groups/$id';
+  static String groupJoin(int id) => '/groups/$id/join';
+  static String groupLeave(int id) => '/groups/$id/leave';
+  static String groupMembers(int id) => '/groups/$id/members';
+  static String groupMember(int id, int userId) => '/groups/$id/members/$userId';
+  static String groupLeader(int id, int userId) => '/groups/$id/leaders/$userId';
   static String groupPosts(int id) => '/groups/$id/posts';
+  static String groupPost(int id, int postId) => '/groups/$id/posts/$postId';
 
   // Communication & Bulletins
   static const String bulletins = '/bulletins';

@@ -1,14 +1,15 @@
-import 'package:equatable/equatable.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'user.freezed.dart';
+part 'user.g.dart';
 
 enum UserRole {
   superAdmin('super_admin'),
   pastor('pastor'),
-  assistantPastor('assistant_pastor'),
-  elder('elder'),
-  deacon('deacon'),
-  youthCommittee('youth_committee'),
-  childrenCommittee('children_committee'),
+  admin('admin'),
   treasurer('treasurer'),
+  youthLeader('youth_leader'),
+  elder('elder'),
   member('member');
 
   final String value;
@@ -21,60 +22,57 @@ enum UserRole {
     );
   }
 
+  /// Pastors and Admins manage tenant-owned content and accounts; Super Admin manages all.
+  bool get canManageContent =>
+      this == UserRole.superAdmin ||
+      this == UserRole.pastor ||
+      this == UserRole.admin;
+
+  /// Pastors, Admins, and Treasurers hold general church leadership / workspace access.
   bool get isLeadership =>
       this == UserRole.superAdmin ||
       this == UserRole.pastor ||
-      this == UserRole.assistantPastor ||
+      this == UserRole.admin ||
       this == UserRole.treasurer;
 
+  /// Treasurers, Pastors, and Super Admin manage giving ledger and funds. Admins do not.
   bool get isFinanceManager =>
       this == UserRole.superAdmin ||
       this == UserRole.pastor ||
-      this == UserRole.assistantPastor ||
       this == UserRole.treasurer;
+
+  /// Pastors, Admins, and Youth Leaders post church-wide Events.
+  bool get canPostChurchEvents =>
+      this == UserRole.superAdmin ||
+      this == UserRole.pastor ||
+      this == UserRole.admin ||
+      this == UserRole.youthLeader;
+
+  /// Pastors, Admins, and Youth Leaders create Groups.
+  bool get canCreateGroups => canPostChurchEvents;
+
+  /// Pastors and Super Admin can access Private Prayer Requests. Admins cannot.
+  bool get canAccessPrivatePrayers =>
+      this == UserRole.superAdmin || this == UserRole.pastor;
+
+  /// Self-deletion is available to members without management rights.
+  bool get canSelfDeleteAccount =>
+      this != UserRole.superAdmin &&
+      this != UserRole.pastor &&
+      this != UserRole.admin;
 }
 
-class User extends Equatable {
-  final int id;
-  final String fullName;
-  final String? email;
-  final String? phone;
-  final UserRole role;
-  final int tenantId;
-  final bool isActive;
+@freezed
+abstract class User with _$User {
+  const factory User({
+    required int id,
+    required String fullName,
+    String? email,
+    String? phone,
+    required UserRole role,
+    required int tenantId,
+    @Default(true) bool isActive,
+  }) = _User;
 
-  const User({
-    required this.id,
-    required this.fullName,
-    this.email,
-    this.phone,
-    required this.role,
-    required this.tenantId,
-    this.isActive = true,
-  });
-
-  factory User.fromJson(Map<String, dynamic> json) {
-    return User(
-      id: json['id'] as int,
-      fullName: json['full_name'] as String,
-      email: json['email'] as String?,
-      phone: json['phone'] as String?,
-      role: UserRole.fromString(json['role'] as String? ?? 'member'),
-      tenantId: json['tenant_id'] as int? ?? 1,
-      isActive: json['is_active'] as bool? ?? true,
-    );
-  }
-
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'full_name': fullName,
-        'email': email,
-        'phone': phone,
-        'role': role.value,
-        'tenant_id': tenantId,
-        'is_active': isActive,
-      };
-
-  @override
-  List<Object?> get props => [id, fullName, email, phone, role, tenantId, isActive];
+  factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
 }

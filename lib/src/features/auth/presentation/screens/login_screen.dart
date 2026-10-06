@@ -5,6 +5,8 @@ import 'package:noah_ark_base_app_flutter/src/core/config/app_config.dart';
 import 'package:noah_ark_base_app_flutter/src/core/theme/app_theme.dart';
 import 'package:noah_ark_base_app_flutter/src/core/theme/church_colors.dart';
 import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:noah_ark_base_app_flutter/src/shared/app_icon_button.dart';
+import 'package:noah_ark_base_app_flutter/src/shared/app_snackbar.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -36,12 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
           if (state is Authenticated) {
             context.go('/devotional');
           } else if (state is AuthFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: context.churchColors.error,
-              ),
-            );
+            showSnackBar(context, state.message, type: ResponseTypeEnum.error);
           }
         },
         builder: (context, state) {
@@ -64,7 +61,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           Positioned(
                             top: 8,
                             left: 8,
-                            child: IconButton(
+                            child: AppIconButton(
                               icon: Icon(
                                 Icons.arrow_back_rounded,
                                 color: context.churchColors.onPrimary,
@@ -83,10 +80,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                 width: 60,
                                 height: 60,
                                 decoration: BoxDecoration(
-                                  color: context.churchColors.onPrimary.withValues(alpha: 0.16),
+                                  color: context.churchColors.onPrimary
+                                      .withValues(alpha: 0.16),
                                   borderRadius: BorderRadius.circular(20),
                                   border: Border.all(
-                                    color: context.churchColors.onPrimary.withValues(alpha: 0.25),
+                                    color: context.churchColors.onPrimary
+                                        .withValues(alpha: 0.25),
                                   ),
                                 ),
                                 child: Icon(
@@ -112,7 +111,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 textAlign: TextAlign.center,
                                 style: AppTheme.sans(
                                   fontSize: 13,
-                                  color: context.churchColors.onPrimary.withValues(alpha: 0.85),
+                                  color: context.churchColors.onPrimary
+                                      .withValues(alpha: 0.85),
                                 ),
                               ),
                             ],
@@ -130,10 +130,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     width: double.infinity,
                     decoration: BoxDecoration(
                       color: context.churchColors.surface,
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(32),
+                      ),
                       boxShadow: [
                         BoxShadow(
-                          color: context.churchColors.text.withValues(alpha: 0.08),
+                          color: context.churchColors.text.withValues(
+                            alpha: 0.08,
+                          ),
                           blurRadius: 20,
                           offset: const Offset(0, -4),
                         ),
@@ -153,7 +157,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                   width: 36,
                                   height: 4,
                                   decoration: BoxDecoration(
-                                    color: context.churchColors.border.withValues(alpha: 0.8),
+                                    color: context.churchColors.border
+                                        .withValues(alpha: 0.8),
                                     borderRadius: BorderRadius.circular(2),
                                   ),
                                 ),
@@ -199,7 +204,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(16),
                                     borderSide: BorderSide(
-                                      color: context.churchColors.border.withValues(alpha: 0.7),
+                                      color: context.churchColors.border
+                                          .withValues(alpha: 0.7),
                                     ),
                                   ),
                                 ),
@@ -218,11 +224,15 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                   suffixIcon: IconButton(
                                     icon: Icon(
-                                      _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                                      _obscurePassword
+                                          ? Icons.visibility_outlined
+                                          : Icons.visibility_off_outlined,
                                       color: context.churchColors.textMuted,
                                     ),
-                                    onPressed: () =>
-                                        setState(() => _obscurePassword = !_obscurePassword),
+                                    onPressed: () => setState(
+                                      () =>
+                                          _obscurePassword = !_obscurePassword,
+                                    ),
                                   ),
                                   filled: true,
                                   fillColor: context.churchColors.raised,
@@ -235,7 +245,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(16),
                                     borderSide: BorderSide(
-                                      color: context.churchColors.border.withValues(alpha: 0.7),
+                                      color: context.churchColors.border
+                                          .withValues(alpha: 0.7),
                                     ),
                                   ),
                                 ),
@@ -245,8 +256,11 @@ class _LoginScreenState extends State<LoginScreen> {
                               FilledButton(
                                 style: FilledButton.styleFrom(
                                   backgroundColor: context.churchColors.primary,
-                                  foregroundColor: context.churchColors.onPrimary,
-                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  foregroundColor:
+                                      context.churchColors.onPrimary,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(16),
                                   ),
@@ -315,8 +329,8 @@ class _LoginScreenState extends State<LoginScreen> {
     final password = _passwordController.text.trim();
     if (identifier.isNotEmpty && password.isNotEmpty) {
       context.read<AuthBloc>().add(
-            AuthLoginSubmitted(identifier: identifier, password: password),
-          );
+        AuthLoginSubmitted(identifier: identifier, password: password),
+      );
     }
   }
 }

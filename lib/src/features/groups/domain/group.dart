@@ -19,36 +19,20 @@ enum GroupType {
   }
 }
 
-enum GroupRole {
-  leader('leader', 'Leader'),
-  coLeader('co_leader', 'Co-Leader'),
-  member('member', 'Member');
-
-  final String value;
-  final String label;
-  const GroupRole(this.value, this.label);
-
-  static GroupRole fromString(String val) {
-    return GroupRole.values.firstWhere(
-      (e) => e.value == val,
-      orElse: () => GroupRole.member,
-    );
-  }
-}
-
 class Group extends Equatable {
   final int id;
   final int tenantId;
   final String name;
   final String? description;
   final GroupType groupType;
+  final bool isOpen;
+  final bool isArchived;
   final String? meetingSchedule;
   final String? meetingLocation;
   final String? materialUrl;
-  final int? leaderId;
-  final bool isActive;
   final int memberCount;
   final bool isMember;
+  final bool isLeader;
   final DateTime createdAt;
 
   const Group({
@@ -57,13 +41,14 @@ class Group extends Equatable {
     required this.name,
     this.description,
     this.groupType = GroupType.bibleStudy,
+    this.isOpen = true,
+    this.isArchived = false,
     this.meetingSchedule,
     this.meetingLocation,
     this.materialUrl,
-    this.leaderId,
-    this.isActive = true,
     this.memberCount = 0,
     this.isMember = false,
+    this.isLeader = false,
     required this.createdAt,
   });
 
@@ -74,13 +59,14 @@ class Group extends Equatable {
       name: json['name'] as String,
       description: json['description'] as String?,
       groupType: GroupType.fromString(json['group_type'] as String? ?? 'bible_study'),
+      isOpen: json['is_open'] as bool? ?? true,
+      isArchived: json['is_archived'] as bool? ?? false,
       meetingSchedule: json['meeting_schedule'] as String?,
       meetingLocation: json['meeting_location'] as String?,
       materialUrl: json['material_url'] as String?,
-      leaderId: json['leader_id'] as int?,
-      isActive: json['is_active'] as bool? ?? true,
       memberCount: json['member_count'] as int? ?? 0,
       isMember: json['is_member'] as bool? ?? false,
+      isLeader: json['is_leader'] as bool? ?? false,
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'] as String)
           : DateTime.now(),
@@ -89,7 +75,10 @@ class Group extends Equatable {
 
   Group copyWith({
     bool? isMember,
+    bool? isLeader,
     int? memberCount,
+    bool? isOpen,
+    bool? isArchived,
   }) {
     return Group(
       id: id,
@@ -97,13 +86,14 @@ class Group extends Equatable {
       name: name,
       description: description,
       groupType: groupType,
+      isOpen: isOpen ?? this.isOpen,
+      isArchived: isArchived ?? this.isArchived,
       meetingSchedule: meetingSchedule,
       meetingLocation: meetingLocation,
       materialUrl: materialUrl,
-      leaderId: leaderId,
-      isActive: isActive,
       memberCount: memberCount ?? this.memberCount,
       isMember: isMember ?? this.isMember,
+      isLeader: isLeader ?? this.isLeader,
       createdAt: createdAt,
     );
   }
@@ -115,41 +105,36 @@ class Group extends Equatable {
         name,
         description,
         groupType,
+        isOpen,
+        isArchived,
         meetingSchedule,
         meetingLocation,
         materialUrl,
-        leaderId,
-        isActive,
         memberCount,
         isMember,
+        isLeader,
         createdAt,
       ];
 }
 
 class GroupMember extends Equatable {
-  final int id;
-  final int groupId;
   final int userId;
   final String? fullName;
-  final GroupRole groupRole;
+  final bool isLeader;
   final DateTime joinedAt;
 
   const GroupMember({
-    required this.id,
-    required this.groupId,
     required this.userId,
     this.fullName,
-    required this.groupRole,
+    required this.isLeader,
     required this.joinedAt,
   });
 
   factory GroupMember.fromJson(Map<String, dynamic> json) {
     return GroupMember(
-      id: json['id'] as int,
-      groupId: json['group_id'] as int,
-      userId: json['user_id'] as int,
+      userId: (json['user_id'] ?? json['id']) as int,
       fullName: json['full_name'] as String?,
-      groupRole: GroupRole.fromString(json['group_role'] as String? ?? 'member'),
+      isLeader: json['is_leader'] as bool? ?? false,
       joinedAt: json['joined_at'] != null
           ? DateTime.parse(json['joined_at'] as String)
           : DateTime.now(),
@@ -157,5 +142,42 @@ class GroupMember extends Equatable {
   }
 
   @override
-  List<Object?> get props => [id, groupId, userId, fullName, groupRole, joinedAt];
+  List<Object?> get props => [userId, fullName, isLeader, joinedAt];
+}
+
+class GroupPost extends Equatable {
+  final int id;
+  final int groupId;
+  final int authorId;
+  final String? authorName;
+  final String body;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+
+  const GroupPost({
+    required this.id,
+    required this.groupId,
+    required this.authorId,
+    this.authorName,
+    required this.body,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  factory GroupPost.fromJson(Map<String, dynamic> json) {
+    return GroupPost(
+      id: json['id'] as int,
+      groupId: json['group_id'] as int,
+      authorId: json['author_id'] as int,
+      authorName: json['author_name'] as String?,
+      body: json['body'] as String,
+      createdAt: DateTime.parse(json['created_at'] as String),
+      updatedAt: json['updated_at'] != null
+          ? DateTime.parse(json['updated_at'] as String)
+          : DateTime.parse(json['created_at'] as String),
+    );
+  }
+
+  @override
+  List<Object?> get props => [id, groupId, authorId, authorName, body, createdAt, updatedAt];
 }

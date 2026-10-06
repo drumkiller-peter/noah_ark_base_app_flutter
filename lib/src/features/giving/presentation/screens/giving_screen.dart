@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:noah_ark_base_app_flutter/src/core/theme/app_theme.dart';
 import 'package:noah_ark_base_app_flutter/src/core/theme/church_colors.dart';
+import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:noah_ark_base_app_flutter/src/features/giving/data/giving_repository.dart';
 import 'package:noah_ark_base_app_flutter/src/features/giving/domain/fund.dart';
 import 'package:noah_ark_base_app_flutter/src/features/giving/presentation/bloc/giving_bloc.dart';
 
@@ -23,12 +25,20 @@ class GivingScreen extends StatelessWidget {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: context.churchColors.primary,
-        foregroundColor: context.churchColors.onPrimary,
-        icon: const Icon(Icons.payment),
-        label: const Text('Give Tithe / Offering'),
-        onPressed: () => _openDonationModal(context),
+      floatingActionButton: BlocBuilder<AuthBloc, AuthState>(
+        builder: (context, authState) {
+          final isFinanceRole =
+              authState is Authenticated && authState.user.role.isFinanceManager;
+          if (!isFinanceRole) return const SizedBox.shrink();
+
+          return FloatingActionButton.extended(
+            backgroundColor: context.churchColors.primary,
+            foregroundColor: context.churchColors.onPrimary,
+            icon: const Icon(Icons.payment),
+            label: const Text('Record Tithe / Offering'),
+            onPressed: () => _openDonationModal(context),
+          );
+        },
       ),
       body: BlocBuilder<GivingBloc, GivingState>(
         builder: (context, state) {
@@ -42,7 +52,38 @@ class GivingScreen extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
               children: [
                 _buildGivingHero(context),
-                const SizedBox(height: 26),
+                const SizedBox(height: 20),
+                BlocBuilder<AuthBloc, AuthState>(
+                  builder: (context, authState) {
+                    final isFinanceRole =
+                        authState is Authenticated && authState.user.role.isFinanceManager;
+                    if (isFinanceRole) return const SizedBox.shrink();
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 18),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: context.churchColors.surface,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: context.churchColors.border),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.info_outline_rounded,
+                              color: context.churchColors.info, size: 22),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              'Online giving (eSewa & Khalti) is coming soon. To give cash, cheque, or bank transfer, please consult our church finance leadership.',
+                              style: TextStyle(
+                                  fontSize: 12.5, color: context.churchColors.textMuted),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
                 _buildSectionHeader(context, 'Church Funds'),
                 const SizedBox(height: 12),
                 if (state.funds.isEmpty)
@@ -242,8 +283,10 @@ class GivingScreen extends StatelessWidget {
     final amountController = TextEditingController();
     final refController = TextEditingController();
     final noteController = TextEditingController();
-    var selectedMethod = 'bank_transfer';
+    var selectedMethod = 'manual_cash';
     var isAnonymous = false;
+    var isSubmitting = false;
+    String? errorMessage;
 
     showModalBottomSheet<void>(
       context: context,
@@ -271,6 +314,31 @@ class GivingScreen extends StatelessWidget {
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 16),
+                  if (errorMessage != null) ...[
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: context.churchColors.error.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: context.churchColors.error),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.error_outline_rounded,
+                              size: 18, color: context.churchColors.error),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              errorMessage!,
+                              style: TextStyle(
+                                  color: context.churchColors.error, fontSize: 13),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
                   TextField(
                     controller: amountController,
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -295,11 +363,9 @@ class GivingScreen extends StatelessWidget {
                     initialValue: selectedMethod,
                     decoration: const InputDecoration(labelText: 'Payment Method'),
                     items: const [
-                      DropdownMenuItem(value: 'bank_transfer', child: Text('Bank Deposit / QR')),
-                      DropdownMenuItem(value: 'cash', child: Text('Cash Envelope')),
-                      DropdownMenuItem(value: 'cheque', child: Text('Bank Cheque')),
-                      DropdownMenuItem(value: 'esewa', child: Text('eSewa')),
-                      DropdownMenuItem(value: 'khalti', child: Text('Khalti')),
+                      DropdownMenuItem(value: 'manual_cash', child: Text('Cash')),
+                      DropdownMenuItem(value: 'manual_cheque', child: Text('Cheque')),
+                      DropdownMenuItem(value: 'bank_transfer', child: Text('Bank Transfer / QR')),
                     ],
                     onChanged: (val) {
                       if (val != null) setModalState(() => selectedMethod = val);
@@ -327,27 +393,53 @@ class GivingScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton(
-                    onPressed: () {
-                      final amount = double.tryParse(amountController.text.trim()) ?? 0;
-                      if (amount > 0) {
-                        context.read<GivingBloc>().add(
-                              DonationSubmitRequested(
-                                amount: amount,
-                                fundId: selectedFundId,
-                                paymentMethod: selectedMethod,
-                                referenceId: refController.text.trim().isNotEmpty
-                                    ? refController.text.trim()
-                                    : null,
-                                note: noteController.text.trim().isNotEmpty
-                                    ? noteController.text.trim()
-                                    : null,
-                                isAnonymous: isAnonymous,
-                              ),
-                            );
-                        Navigator.pop(ctx);
-                      }
-                    },
-                    child: const Text('Submit Giving Record'),
+                    onPressed: isSubmitting
+                        ? null
+                        : () async {
+                            final amount = double.tryParse(amountController.text.trim()) ?? 0;
+                            if (amount <= 0) {
+                              setModalState(() => errorMessage = 'Please enter a valid amount.');
+                              return;
+                            }
+                            setModalState(() {
+                              isSubmitting = true;
+                              errorMessage = null;
+                            });
+
+                            try {
+                              await context.read<GivingRepository>().recordManualDonation(
+                                    amount: amount,
+                                    fundId: selectedFundId,
+                                    paymentMethod: selectedMethod,
+                                    referenceId: refController.text.trim().isNotEmpty
+                                        ? refController.text.trim()
+                                        : null,
+                                    note: noteController.text.trim().isNotEmpty
+                                        ? noteController.text.trim()
+                                        : null,
+                                    isAnonymous: isAnonymous,
+                                  );
+                              if (context.mounted) {
+                                context
+                                    .read<GivingBloc>()
+                                    .add(const GivingOverviewFetchRequested());
+                                Navigator.pop(ctx);
+                              }
+                            } catch (e) {
+                              setModalState(() {
+                                isSubmitting = false;
+                                errorMessage =
+                                    'Failed to record gift. Please check details and try again.';
+                              });
+                            }
+                          },
+                    child: isSubmitting
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Text('Submit Giving Record'),
                   ),
                 ],
               ),

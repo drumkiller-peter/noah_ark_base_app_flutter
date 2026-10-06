@@ -7,10 +7,7 @@ class AuthRepository {
   final ApiClient apiClient;
   final TokenStorage tokenStorage;
 
-  AuthRepository({
-    required this.apiClient,
-    required this.tokenStorage,
-  });
+  AuthRepository({required this.apiClient, required this.tokenStorage});
 
   Future<User?> checkAuth() async {
     final token = await tokenStorage.getAccessToken();
@@ -18,7 +15,9 @@ class AuthRepository {
       return null;
     }
     try {
-      final response = await apiClient.dio.get<Map<String, dynamic>>(ApiEndpoints.me);
+      final response = await apiClient.dio.get<Map<String, dynamic>>(
+        ApiEndpoints.me,
+      );
       if (response.statusCode == 200 && response.data != null) {
         final user = User.fromJson(response.data!);
         await tokenStorage.saveUserTokens(
@@ -40,10 +39,7 @@ class AuthRepository {
   }) async {
     final response = await apiClient.dio.post<Map<String, dynamic>>(
       ApiEndpoints.login,
-      data: {
-        'identifier': identifier,
-        'password': password,
-      },
+      data: {'identifier': identifier, 'password': password},
     );
 
     if (response.statusCode == 200 && response.data != null) {
@@ -57,7 +53,9 @@ class AuthRepository {
       );
 
       // Fetch user profile immediately after login
-      final profileResponse = await apiClient.dio.get<Map<String, dynamic>>(ApiEndpoints.me);
+      final profileResponse = await apiClient.dio.get<Map<String, dynamic>>(
+        ApiEndpoints.me,
+      );
       final user = User.fromJson(profileResponse.data!);
 
       await tokenStorage.saveUserTokens(

@@ -11,11 +11,33 @@ abstract class EventsEvent extends Equatable {
 }
 
 class EventsFetchRequested extends EventsEvent {
-  final DateTime? fromDate;
-  final DateTime? toDate;
-  const EventsFetchRequested({this.fromDate, this.toDate});
+  final DateTime? startsAfter;
+  final DateTime? startsBefore;
+  final int? groupId;
+  const EventsFetchRequested({this.startsAfter, this.startsBefore, this.groupId});
   @override
-  List<Object?> get props => [fromDate, toDate];
+  List<Object?> get props => [startsAfter, startsBefore, groupId];
+}
+
+class EventCreateRequested extends EventsEvent {
+  final String title;
+  final String? description;
+  final DateTime startsAt;
+  final DateTime endsAt;
+  final String? locationName;
+  final String? address;
+  final int? groupId;
+  const EventCreateRequested({
+    required this.title,
+    this.description,
+    required this.startsAt,
+    required this.endsAt,
+    this.locationName,
+    this.address,
+    this.groupId,
+  });
+  @override
+  List<Object?> get props => [title, description, startsAt, endsAt, locationName, address, groupId];
 }
 
 class EventRsvpSubmitted extends EventsEvent {
@@ -55,9 +77,10 @@ class EventsLoading extends EventsState {
 
 class EventsLoaded extends EventsState {
   final List<ChurchEvent> events;
-  const EventsLoaded(this.events);
+  final String? rsvpError;
+  const EventsLoaded(this.events, {this.rsvpError});
   @override
-  List<Object?> get props => [events];
+  List<Object?> get props => [events, rsvpError];
 }
 
 class EventsError extends EventsState {
@@ -73,6 +96,7 @@ class EventsBloc extends Bloc<EventsEvent, EventsState> {
 
   EventsBloc({required this.repository}) : super(const EventsInitial()) {
     on<EventsFetchRequested>(_onFetchRequested);
+    on<EventCreateRequested>(_onCreateRequested);
     on<EventRsvpSubmitted>(_onRsvpSubmitted);
     on<EventRsvpWithdrawn>(_onRsvpWithdrawn);
   }
@@ -84,10 +108,31 @@ class EventsBloc extends Bloc<EventsEvent, EventsState> {
     emit(const EventsLoading());
     try {
       final events = await repository.getEvents(
-        fromDate: event.fromDate,
-        toDate: event.toDate,
+        startsAfter: event.startsAfter,
+        startsBefore: event.startsBefore,
+        groupId: event.groupId,
       );
       emit(EventsLoaded(events));
+    } catch (e) {
+      emit(EventsError(e.toString()));
+    }
+  }
+
+  Future<void> _onCreateRequested(
+    EventCreateRequested event,
+    Emitter<EventsState> emit,
+  ) async {
+    try {
+      await repository.createEvent(
+        title: event.title,
+        description: event.description,
+        startsAt: event.startsAt,
+        endsAt: event.endsAt,
+        locationName: event.locationName,
+        address: event.address,
+        groupId: event.groupId,
+      );
+      add(const EventsFetchRequested());
     } catch (e) {
       emit(EventsError(e.toString()));
     }
@@ -128,11 +173,19 @@ class EventsBloc extends Bloc<EventsEvent, EventsState> {
       }).toList();
 
       emit(EventsLoaded(updated));
-      await repository.setRsvp(
-        eventId: event.eventId,
-        status: event.status.value,
-        guestCount: event.guestCount,
-      );
+      try {
+        await repository.setRsvp(
+          eventId: event.eventId,
+          status: event.status.value,
+          guestCount: event.guestCount,
+        );
+      } catch (e) {
+        // Revert to original events and alert user of failure
+        emit(EventsLoaded(
+          currentEvents,
+          rsvpError: 'Unable to record RSVP response. Please try again.',
+        ));
+      }
     }
   }
 
@@ -163,7 +216,15 @@ class EventsBloc extends Bloc<EventsEvent, EventsState> {
       }).toList();
 
       emit(EventsLoaded(updated));
-      await repository.withdrawRsvp(event.eventId);
+      try {
+        await repository.withdrawRsvp(event.eventId);
+      } catch (e) {
+        // Revert to original events and alert user of failure
+        emit(EventsLoaded(
+          currentEvents,
+          rsvpError: 'Unable to withdraw RSVP. Please try again.',
+        ));
+      }
     }
   }
 }

@@ -212,6 +212,7 @@ class _PrayerScreenState extends State<PrayerScreen> with SingleTickerProviderSt
   void _openCreatePrayerSheet(BuildContext context) {
     final titleController = TextEditingController();
     final contentController = TextEditingController();
+    final pastorIdController = TextEditingController(text: '1');
     var isPrivate = false;
     var isAnonymous = false;
 
@@ -312,6 +313,24 @@ class _PrayerScreenState extends State<PrayerScreen> with SingleTickerProviderSt
                       });
                     },
                   ),
+                  if (isPrivate) ...[
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: pastorIdController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: 'Assigned Pastor ID',
+                        hintText: 'e.g. 1',
+                        labelStyle: AppTheme.sans(fontSize: 13),
+                        filled: true,
+                        fillColor: context.churchColors.raised,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide(color: context.churchColors.border),
+                        ),
+                      ),
+                    ),
+                  ],
                   if (!isPrivate)
                     SwitchListTile.adaptive(
                       contentPadding: EdgeInsets.zero,
@@ -340,6 +359,7 @@ class _PrayerScreenState extends State<PrayerScreen> with SingleTickerProviderSt
                     onPressed: () {
                       final title = titleController.text.trim();
                       final content = contentController.text.trim();
+                      final pastorId = isPrivate ? int.tryParse(pastorIdController.text.trim()) : null;
                       if (title.isNotEmpty && content.isNotEmpty) {
                         context.read<PrayerBloc>().add(
                               PrayerCreateSubmitted(
@@ -347,6 +367,7 @@ class _PrayerScreenState extends State<PrayerScreen> with SingleTickerProviderSt
                                 content: content,
                                 isPrivate: isPrivate,
                                 isAnonymous: isAnonymous,
+                                assignedPastorId: pastorId,
                               ),
                             );
                         Navigator.pop(ctx);
@@ -505,23 +526,41 @@ class _PrayerListView extends StatelessWidget {
                     ),
                   ),
                   if (prayer.isPrivate)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: context.churchColors.warning.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.lock_rounded, size: 11, color: context.churchColors.warning),
-                          const SizedBox(width: 4),
-                          Text(
-                            'CONFIDENTIAL',
-                            style: AppTheme.trackingBadge(color: context.churchColors.warning),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: context.churchColors.warning.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(6),
                           ),
-                        ],
-                      ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.lock_rounded, size: 11, color: context.churchColors.warning),
+                              const SizedBox(width: 4),
+                              Text(
+                                'CONFIDENTIAL',
+                                style: AppTheme.trackingBadge(color: context.churchColors.warning),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          prayer.assignedPastorId != null
+                              ? 'Assigned Pastor: #${prayer.assignedPastorId}'
+                              : 'Unassigned',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: prayer.assignedPastorId != null
+                                ? context.churchColors.textMuted
+                                : context.churchColors.error,
+                          ),
+                        ),
+                      ],
                     )
                   else if (prayer.status == PrayerStatus.answered)
                     Container(

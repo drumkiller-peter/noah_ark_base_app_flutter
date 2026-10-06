@@ -122,7 +122,15 @@ class PrayerBloc extends Bloc<PrayerEvent, PrayerState> {
         privatePrayers: currentState.privatePrayers,
       ));
 
-      await repository.toggleIntercession(event.prayerId, event.intercede);
+      try {
+        await repository.toggleIntercession(event.prayerId, event.intercede);
+      } catch (_) {
+        // Revert to previous state so button returns to correct state on failure
+        emit(PrayerLoaded(
+          publicPrayers: currentState.publicPrayers,
+          privatePrayers: currentState.privatePrayers,
+        ));
+      }
     }
   }
 

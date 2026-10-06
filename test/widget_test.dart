@@ -43,8 +43,27 @@ void main() {
     });
 
     test('User roles map correctly to leadership permissions', () {
+      expect(UserRole.values.length, equals(7));
       expect(UserRole.pastor.isLeadership, isTrue);
+      expect(UserRole.admin.isLeadership, isTrue);
+      expect(UserRole.admin.canManageContent, isTrue);
+      expect(UserRole.admin.isFinanceManager, isFalse);
+      expect(UserRole.admin.canAccessPrivatePrayers, isFalse);
+
       expect(UserRole.treasurer.isFinanceManager, isTrue);
+      expect(UserRole.treasurer.canManageContent, isFalse);
+
+      expect(UserRole.youthLeader.canPostChurchEvents, isTrue);
+      expect(UserRole.youthLeader.canCreateGroups, isTrue);
+      expect(UserRole.youthLeader.isLeadership, isFalse);
+      expect(UserRole.youthLeader.canManageContent, isFalse);
+
+      expect(UserRole.elder.canPostChurchEvents, isFalse);
+      expect(UserRole.elder.canCreateGroups, isFalse);
+      expect(UserRole.elder.isLeadership, isFalse);
+
+      expect(UserRole.member.canPostChurchEvents, isFalse);
+      expect(UserRole.member.canCreateGroups, isFalse);
       expect(UserRole.member.isLeadership, isFalse);
     });
 
@@ -75,6 +94,39 @@ void main() {
 
       expect(prayer.isPrivate, isTrue);
       expect(prayer.assignedPastorId, equals(10));
+    });
+
+    test('PrayerRequest deserializes backend PrayerRequestDetail and unassigned pastor', () {
+      final chainJson = {
+        'id': 42,
+        'tenant_id': 1,
+        'scope': 'chain',
+        'content': 'Pray for our youth conference this weekend.',
+        'is_anonymous': false,
+        'status': 'open',
+        'pray_count': 15,
+        'is_interceding': true,
+        'created_at': '2026-10-05T00:00:00Z',
+      };
+      final chainPrayer = PrayerRequest.fromJson(chainJson);
+      expect(chainPrayer.id, equals(42));
+      expect(chainPrayer.isPrivate, isFalse);
+      expect(chainPrayer.intercessionCount, equals(15));
+      expect(chainPrayer.hasInterceded, isTrue);
+
+      final privateJson = {
+        'id': 43,
+        'tenant_id': 1,
+        'scope': 'private',
+        'content': 'Personal pastoral guidance needed.',
+        'is_anonymous': false,
+        'status': 'open',
+        'assigned_pastor_id': null,
+        'created_at': '2026-10-05T00:00:00Z',
+      };
+      final privatePrayer = PrayerRequest.fromJson(privateJson);
+      expect(privatePrayer.isPrivate, isTrue);
+      expect(privatePrayer.assignedPastorId, isNull);
     });
 
     test('Church fund visibility per backend rules', () {

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -83,17 +84,11 @@ class _NoahArkAppState extends State<NoahArkApp> {
       appConfig: widget.appConfig,
     );
 
-    _eventsRepository = EventsRepository(
-      apiClient: widget.apiClient,
-    );
+    _eventsRepository = EventsRepository(apiClient: widget.apiClient);
 
-    _prayerRepository = PrayerRepository(
-      apiClient: widget.apiClient,
-    );
+    _prayerRepository = PrayerRepository(apiClient: widget.apiClient);
 
-    _givingRepository = GivingRepository(
-      apiClient: widget.apiClient,
-    );
+    _givingRepository = GivingRepository(apiClient: widget.apiClient);
 
     _bulletinsRepository = BulletinsRepository(
       apiClient: widget.apiClient,
@@ -101,13 +96,9 @@ class _NoahArkAppState extends State<NoahArkApp> {
       config: widget.appConfig,
     );
 
-    _sermonsRepository = SermonsRepository(
-      apiClient: widget.apiClient,
-    );
+    _sermonsRepository = SermonsRepository(apiClient: widget.apiClient);
 
-    _groupsRepository = GroupsRepository(
-      apiClient: widget.apiClient,
-    );
+    _groupsRepository = GroupsRepository(apiClient: widget.apiClient);
   }
 
   @override
@@ -118,43 +109,65 @@ class _NoahArkAppState extends State<NoahArkApp> {
         RepositoryProvider<AppDatabase>.value(value: widget.database),
         RepositoryProvider<TokenStorage>.value(value: widget.tokenStorage),
         RepositoryProvider<AuthRepository>.value(value: _authRepository),
-        RepositoryProvider<DevotionalRepository>.value(value: _devotionalRepository),
+        RepositoryProvider<DevotionalRepository>.value(
+          value: _devotionalRepository,
+        ),
         RepositoryProvider<HymnsRepository>.value(value: _hymnsRepository),
         RepositoryProvider<EventsRepository>.value(value: _eventsRepository),
         RepositoryProvider<PrayerRepository>.value(value: _prayerRepository),
         RepositoryProvider<GivingRepository>.value(value: _givingRepository),
-        RepositoryProvider<BulletinsRepository>.value(value: _bulletinsRepository),
+        RepositoryProvider<BulletinsRepository>.value(
+          value: _bulletinsRepository,
+        ),
         RepositoryProvider<SermonsRepository>.value(value: _sermonsRepository),
         RepositoryProvider<GroupsRepository>.value(value: _groupsRepository),
       ],
       child: MultiBlocProvider(
         providers: [
           BlocProvider<AuthBloc>(
-            create: (ctx) => AuthBloc(authRepository: _authRepository)..add(const AuthCheckRequested()),
+            create: (ctx) =>
+                AuthBloc(authRepository: _authRepository)
+                  ..add(const AuthCheckRequested()),
           ),
           BlocProvider<DevotionalBloc>(
-            create: (ctx) => DevotionalBloc(repository: _devotionalRepository)..add(const DevotionalFetchRequested()),
+            create: (ctx) =>
+                DevotionalBloc(repository: _devotionalRepository)
+                  ..add(const DevotionalFetchRequested()),
           ),
           BlocProvider<HymnsBloc>(
-            create: (ctx) => HymnsBloc(repository: _hymnsRepository)..add(const HymnsFetchRequested()),
+            create: (ctx) =>
+                HymnsBloc(repository: _hymnsRepository)
+                  ..add(const HymnsFetchRequested()),
           ),
           BlocProvider<EventsBloc>(
-            create: (ctx) => EventsBloc(repository: _eventsRepository)..add(const EventsFetchRequested()),
+            create: (ctx) =>
+                EventsBloc(repository: _eventsRepository)
+                  ..add(const EventsFetchRequested()),
           ),
           BlocProvider<PrayerBloc>(
-            create: (ctx) => PrayerBloc(repository: _prayerRepository)..add(const PrayerChainFetchRequested()),
+            create: (ctx) =>
+                PrayerBloc(repository: _prayerRepository)
+                  ..add(const PrayerChainFetchRequested()),
           ),
           BlocProvider<GivingBloc>(
-            create: (ctx) => GivingBloc(repository: _givingRepository)..add(const GivingOverviewFetchRequested()),
+            create: (ctx) =>
+                GivingBloc(repository: _givingRepository)
+                  ..add(const GivingOverviewFetchRequested()),
           ),
           BlocProvider<BulletinsBloc>(
-            create: (ctx) => BulletinsBloc(repository: _bulletinsRepository)..add(const LoadBulletins()),
+            create: (ctx) =>
+                BulletinsBloc(repository: _bulletinsRepository)
+                  ..add(const LoadBulletins()),
           ),
           BlocProvider<SermonsBloc>(
-            create: (ctx) => SermonsBloc(repository: _sermonsRepository)..add(const LoadSermons()),
+            create: (ctx) =>
+                SermonsBloc(repository: _sermonsRepository)
+                  ..add(const LoadSermons()),
           ),
           BlocProvider<GroupsBloc>(
-            create: (ctx) => GroupsBloc(repository: _groupsRepository)..add(const LoadGroups()),
+            create: (ctx) =>
+                GroupsBloc(repository: _groupsRepository)
+                  ..add(const LoadGroups()),
           ),
         ],
         child: MaterialApp.router(
@@ -164,15 +177,13 @@ class _NoahArkAppState extends State<NoahArkApp> {
           darkTheme: AppTheme.dark(widget.churchTheme),
           themeMode: ThemeMode.system,
           routerConfig: _router,
-          localizationsDelegates: const [
+          localizationsDelegates: [
+            ...context.localizationDelegates,
             GlobalMaterialLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          supportedLocales: const [
-            Locale('en', 'US'),
-            Locale('ne', 'NP'),
-          ],
+          supportedLocales: const [Locale('en', 'US'), Locale('ne', 'NP')],
         ),
       ),
     );

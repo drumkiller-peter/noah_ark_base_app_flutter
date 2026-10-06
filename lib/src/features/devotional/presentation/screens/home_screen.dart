@@ -1,10 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:noah_ark_base_app_flutter/src/core/config/app_config.dart';
+import 'package:noah_ark_base_app_flutter/src/core/constants/translation_string.dart';
+import 'package:noah_ark_base_app_flutter/src/core/theme/app_theme.dart';
 import 'package:noah_ark_base_app_flutter/src/core/theme/church_colors.dart';
 import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/widgets/user_avatar_button.dart';
@@ -12,7 +14,9 @@ import 'package:noah_ark_base_app_flutter/src/features/devotional/domain/daily_q
 import 'package:noah_ark_base_app_flutter/src/features/devotional/presentation/bloc/devotional_bloc.dart';
 import 'package:noah_ark_base_app_flutter/src/features/sermons/domain/sermon.dart';
 import 'package:noah_ark_base_app_flutter/src/features/sermons/presentation/bloc/sermons_bloc.dart';
-import 'package:noah_ark_base_app_flutter/src/core/theme/app_theme.dart';
+import 'package:noah_ark_base_app_flutter/src/shared/app_icon.dart';
+import 'package:noah_ark_base_app_flutter/src/shared/app_rounded_card.dart';
+import 'package:noah_ark_base_app_flutter/src/shared/app_text.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -48,7 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: context.churchColors.primary.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(
+              child: AppIcon(
                 Icons.church_rounded,
                 color: context.churchColors.primary,
                 size: 22,
@@ -88,9 +92,9 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(
             icon: const Icon(Icons.refresh_rounded, size: 22),
             tooltip: 'Refresh Devotional',
-            onPressed: () => context
-                .read<DevotionalBloc>()
-                .add(const DevotionalFetchRequested(forceRefresh: true)),
+            onPressed: () => context.read<DevotionalBloc>().add(
+              const DevotionalFetchRequested(forceRefresh: true),
+            ),
           ),
           const Padding(
             padding: EdgeInsets.only(right: 12.0),
@@ -100,9 +104,9 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          context
-              .read<DevotionalBloc>()
-              .add(const DevotionalFetchRequested(forceRefresh: true));
+          context.read<DevotionalBloc>().add(
+            const DevotionalFetchRequested(forceRefresh: true),
+          );
         },
         child: ListView(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
@@ -150,7 +154,10 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             // Top Welcome / Greeting Row (No Truncation)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 6.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 4.0,
+                vertical: 6.0,
+              ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -184,12 +191,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   if (isAuthenticated)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
-                        color: context.churchColors.primary.withValues(alpha: 0.12),
+                        color: context.churchColors.primary.withValues(
+                          alpha: 0.12,
+                        ),
                         borderRadius: BorderRadius.circular(999),
                         border: Border.all(
-                          color: context.churchColors.primary.withValues(alpha: 0.25),
+                          color: context.churchColors.primary.withValues(
+                            alpha: 0.25,
+                          ),
                         ),
                       ),
                       child: Text(
@@ -229,7 +243,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: context.churchColors.onPrimary.withValues(alpha: 0.16),
+                          color: context.churchColors.onPrimary.withValues(
+                            alpha: 0.16,
+                          ),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
@@ -246,7 +262,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             fontSize: 11,
                             fontWeight: FontWeight.w800,
                             letterSpacing: 0.8,
-                            color: context.churchColors.onPrimary.withValues(alpha: 0.85),
+                            color: context.churchColors.onPrimary.withValues(
+                              alpha: 0.85,
+                            ),
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -254,13 +272,16 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
                           color: context.churchColors.onPrimary,
                           borderRadius: BorderRadius.circular(999),
                         ),
                         child: Text(
-                          'THIS WEEK',
+                          TranslationString.thisWeek.tr(),
                           style: TextStyle(
                             fontSize: 9.5,
                             fontWeight: FontWeight.w800,
@@ -288,7 +309,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: TextStyle(
                       fontSize: 12.5,
                       height: 1.45,
-                      color: context.churchColors.onPrimary.withValues(alpha: 0.82),
+                      color: context.churchColors.onPrimary.withValues(
+                        alpha: 0.82,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 18),
@@ -304,8 +327,17 @@ class _HomeScreenState extends State<HomeScreen> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          icon: const Icon(Icons.auto_stories_rounded, size: 16),
-                          label: const Text('Order of Service', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700)),
+                          icon: const Icon(
+                            Icons.auto_stories_rounded,
+                            size: 16,
+                          ),
+                          label: const Text(
+                            'Order of Service',
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                           onPressed: () => context.push('/bulletins'),
                         ),
                       ),
@@ -316,14 +348,25 @@ class _HomeScreenState extends State<HomeScreen> {
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             foregroundColor: context.churchColors.onPrimary,
                             side: BorderSide(
-                              color: context.churchColors.onPrimary.withValues(alpha: 0.5),
+                              color: context.churchColors.onPrimary.withValues(
+                                alpha: 0.5,
+                              ),
                             ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          icon: const Icon(Icons.smart_display_rounded, size: 16),
-                          label: const Text('Watch Live', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700)),
+                          icon: const AppIcon(
+                            Icons.smart_display_rounded,
+                            size: 16,
+                          ),
+                          label: Text(
+                            TranslationString.watchLive.tr(),
+                            style: const TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                           onPressed: () => context.push('/sermons'),
                         ),
                       ),
@@ -341,7 +384,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildWeekdayStrip(BuildContext context) {
     final now = DateTime.now();
     // Week starts on Sunday
-    final sunday = DateTime(now.year, now.month, now.day).subtract(Duration(days: now.weekday % 7));
+    final sunday = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ).subtract(Duration(days: now.weekday % 7));
     final weekDays = List.generate(7, (i) => sunday.add(Duration(days: i)));
 
     return Container(
@@ -363,10 +410,12 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: weekDays.map((date) {
-          final isSelected = _selectedDate.year == date.year &&
+          final isSelected =
+              _selectedDate.year == date.year &&
               _selectedDate.month == date.month &&
               _selectedDate.day == date.day;
-          final isToday = now.year == date.year &&
+          final isToday =
+              now.year == date.year &&
               now.month == date.month &&
               now.day == date.day;
 
@@ -374,7 +423,9 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 2),
               child: Material(
-                color: isSelected ? context.churchColors.primary : Colors.transparent,
+                color: isSelected
+                    ? context.churchColors.primary
+                    : Colors.transparent,
                 borderRadius: BorderRadius.circular(14),
                 child: InkWell(
                   borderRadius: BorderRadius.circular(14),
@@ -390,7 +441,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       borderRadius: BorderRadius.circular(14),
                       border: !isSelected && isToday
                           ? Border.all(
-                              color: context.churchColors.primary.withValues(alpha: 0.5),
+                              color: context.churchColors.primary.withValues(
+                                alpha: 0.5,
+                              ),
                               width: 1.2,
                             )
                           : null,
@@ -402,10 +455,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           DateFormat('E').format(date).toUpperCase(),
                           style: AppTheme.sans(
                             fontSize: 10,
-                            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                            fontWeight: isSelected
+                                ? FontWeight.w800
+                                : FontWeight.w600,
                             letterSpacing: 0.6,
                             color: isSelected
-                                ? context.churchColors.onPrimary.withValues(alpha: 0.88)
+                                ? context.churchColors.onPrimary.withValues(
+                                    alpha: 0.88,
+                                  )
                                 : context.churchColors.textMuted,
                           ),
                         ),
@@ -414,10 +471,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           date.day.toString(),
                           style: AppTheme.serif(
                             fontSize: 16,
-                            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w700,
+                            fontWeight: isSelected
+                                ? FontWeight.w800
+                                : FontWeight.w700,
                             color: isSelected
                                 ? context.churchColors.onPrimary
-                                : (isToday ? context.churchColors.primary : context.churchColors.text),
+                                : (isToday
+                                      ? context.churchColors.primary
+                                      : context.churchColors.text),
                           ),
                         ),
                         if (isToday && !isSelected) ...[
@@ -438,10 +499,10 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           );
-          }).toList(),
-        ),
-      );
-    }
+        }).toList(),
+      ),
+    );
+  }
 
   Widget _buildDevotionalSection(BuildContext context) {
     return BlocBuilder<DevotionalBloc, DevotionalState>(
@@ -472,18 +533,25 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             child: Column(
               children: [
-                Icon(Icons.error_outline_rounded, size: 36, color: context.churchColors.error),
+                Icon(
+                  Icons.error_outline_rounded,
+                  size: 36,
+                  color: context.churchColors.error,
+                ),
                 const SizedBox(height: 8),
                 Text(
                   state.message,
-                  style: TextStyle(color: context.churchColors.error, fontSize: 13),
+                  style: TextStyle(
+                    color: context.churchColors.error,
+                    fontSize: 13,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 12),
                 FilledButton.tonal(
-                  onPressed: () => context
-                      .read<DevotionalBloc>()
-                      .add(const DevotionalFetchRequested(forceRefresh: true)),
+                  onPressed: () => context.read<DevotionalBloc>().add(
+                    const DevotionalFetchRequested(forceRefresh: true),
+                  ),
                   child: const Text('Retry'),
                 ),
               ],
@@ -515,183 +583,199 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildSanctuaryScriptureCard(BuildContext context, DailyQuote quote) {
-    return Container(
-      decoration: BoxDecoration(
-        color: context.churchColors.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: context.churchColors.primary.withValues(alpha: 0.28),
-          width: 1.2,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: context.churchColors.text.withValues(alpha: 0.03),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: context.churchColors.primary.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.auto_stories_rounded,
-                        size: 13,
-                        color: context.churchColors.primary,
-                      ),
-                      const SizedBox(width: 5),
-                      Text(
-                        "TODAY'S SCRIPTURE",
-                        style: AppTheme.trackingBadge(color: context.churchColors.primary),
-                      ),
-                    ],
-                  ),
+    return AppRoundedCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                decoration: BoxDecoration(
+                  color: context.churchColors.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(999),
                 ),
-                const Spacer(),
-                if (quote.date != null)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: context.churchColors.raised,
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(
-                        color: context.churchColors.border.withValues(alpha: 0.6),
-                      ),
-                    ),
-                    child: Text(
-                      quote.date!,
-                      style: AppTheme.sans(
-                        fontSize: 11,
-                        color: context.churchColors.textMuted,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 14),
-            if (quote.authorName != null) ...[
-              Text(
-                quote.authorName!,
-                style: AppTheme.serif(
-                  fontSize: 19,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.2,
-                  color: context.churchColors.text,
-                ),
-              ),
-              const SizedBox(height: 10),
-            ],
-            IntrinsicHeight(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Container(
-                    width: 3,
-                    decoration: BoxDecoration(
-                      color: context.churchColors.primary,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Text(
-                      '“${quote.content}”',
-                      style: AppTheme.serif(
-                        fontSize: 18,
-                        height: 1.6,
-                        fontStyle: FontStyle.italic,
-                        fontWeight: FontWeight.w500,
-                        color: context.churchColors.text,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            Divider(height: 1, color: context.churchColors.border.withValues(alpha: 0.5)),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                TextButton.icon(
-                  style: TextButton.styleFrom(
-                    foregroundColor: context.churchColors.textMuted,
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    minimumSize: Size.zero,
-                  ),
-                  icon: const Icon(Icons.copy_rounded, size: 16),
-                  label: Text(
-                    'Copy Verse',
-                    style: AppTheme.sans(fontSize: 12, fontWeight: FontWeight.w600),
-                  ),
-                  onPressed: () {
-                    Clipboard.setData(ClipboardData(
-                      text: '${quote.content}\n— ${quote.authorName ?? "Scripture"}',
-                    ));
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: const Text('Scripture copied to clipboard.'),
-                        backgroundColor: context.churchColors.surface,
-                        behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          side: BorderSide(color: context.churchColors.border),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    TextButton.icon(
-                      style: TextButton.styleFrom(
-                        foregroundColor: context.churchColors.primary,
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        minimumSize: Size.zero,
-                      ),
-                      icon: const Icon(Icons.volunteer_activism_rounded, size: 16),
-                      label: Text(
-                        'Pray',
-                        style: AppTheme.sans(fontSize: 12, fontWeight: FontWeight.w600),
-                      ),
-                      onPressed: () => context.push('/prayer'),
+                    AppIcon(
+                      Icons.auto_stories_rounded,
+                      size: 13,
+                      color: context.churchColors.primary,
                     ),
-                    const SizedBox(width: 8),
-                    TextButton.icon(
-                      style: TextButton.styleFrom(
-                        foregroundColor: context.churchColors.secondary,
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        minimumSize: Size.zero,
+                    const SizedBox(width: 5),
+                    AppText(
+                      TranslationString.todaysScripture.tr(),
+                      style: AppTheme.trackingBadge(
+                        color: context.churchColors.primary,
                       ),
-                      icon: const Icon(Icons.library_music_rounded, size: 16),
-                      label: Text(
-                        'Hymnal',
-                        style: AppTheme.sans(fontSize: 12, fontWeight: FontWeight.w600),
-                      ),
-                      onPressed: () => context.push('/hymns'),
                     ),
                   ],
                 ),
+              ),
+              const Spacer(),
+              if (quote.date != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: context.churchColors.raised,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                      color: context.churchColors.border.withValues(alpha: 0.6),
+                    ),
+                  ),
+                  child: Text(
+                    quote.date!,
+                    style: AppTheme.sans(
+                      fontSize: 11,
+                      color: context.churchColors.textMuted,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          if (quote.authorName != null) ...[
+            Text(
+              quote.authorName!,
+              style: AppTheme.serif(
+                fontSize: 19,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.2,
+                color: context.churchColors.text,
+              ),
+            ),
+            const SizedBox(height: 10),
+          ],
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Container(
+                  width: 3,
+                  decoration: BoxDecoration(
+                    color: context.churchColors.primary,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(
+                    '“${quote.content}”',
+                    style: AppTheme.serif(
+                      fontSize: 18,
+                      height: 1.6,
+                      fontStyle: FontStyle.italic,
+                      fontWeight: FontWeight.w500,
+                      color: context.churchColors.text,
+                    ),
+                  ),
+                ),
               ],
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 16),
+          Divider(
+            height: 1,
+            color: context.churchColors.border.withValues(alpha: 0.5),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              TextButton.icon(
+                style: TextButton.styleFrom(
+                  foregroundColor: context.churchColors.textMuted,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  minimumSize: Size.zero,
+                ),
+                icon: const Icon(Icons.copy_rounded, size: 16),
+                label: Text(
+                  TranslationString.copyVerse.tr(),
+                  style: AppTheme.sans(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                onPressed: () {
+                  Clipboard.setData(
+                    ClipboardData(
+                      text:
+                          '${quote.content}\n— ${quote.authorName ?? "Scripture"}',
+                    ),
+                  );
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        TranslationString.scriptureCopiedToClipboard.tr(),
+                      ),
+                      backgroundColor: context.churchColors.surface,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        side: BorderSide(color: context.churchColors.border),
+                      ),
+                    ),
+                  );
+                },
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextButton.icon(
+                    style: TextButton.styleFrom(
+                      foregroundColor: context.churchColors.primary,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      minimumSize: Size.zero,
+                    ),
+                    icon: const Icon(
+                      Icons.volunteer_activism_rounded,
+                      size: 16,
+                    ),
+                    label: Text(
+                      'Pray',
+                      style: AppTheme.sans(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    onPressed: () => context.push('/prayer'),
+                  ),
+                  const SizedBox(width: 8),
+                  TextButton.icon(
+                    style: TextButton.styleFrom(
+                      foregroundColor: context.churchColors.secondary,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      minimumSize: Size.zero,
+                    ),
+                    icon: const Icon(Icons.library_music_rounded, size: 16),
+                    label: Text(
+                      'Hymnal',
+                      style: AppTheme.sans(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    onPressed: () => context.push('/hymns'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -735,7 +819,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(width: 5),
                     Text(
                       'REFLECTION',
-                      style: AppTheme.trackingBadge(color: context.churchColors.secondary),
+                      style: AppTheme.trackingBadge(
+                        color: context.churchColors.secondary,
+                      ),
                     ),
                   ],
                 ),
@@ -815,7 +901,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(width: 5),
                     Text(
                       'PRAYER FOR TODAY',
-                      style: AppTheme.trackingBadge(color: context.churchColors.primary),
+                      style: AppTheme.trackingBadge(
+                        color: context.churchColors.primary,
+                      ),
                     ),
                   ],
                 ),
@@ -844,7 +932,10 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          Divider(height: 1, color: context.churchColors.border.withValues(alpha: 0.5)),
+          Divider(
+            height: 1,
+            color: context.churchColors.border.withValues(alpha: 0.5),
+          ),
           const SizedBox(height: 10),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -862,13 +953,19 @@ class _HomeScreenState extends State<HomeScreen> {
               TextButton.icon(
                 style: TextButton.styleFrom(
                   foregroundColor: context.churchColors.primary,
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                   minimumSize: Size.zero,
                 ),
                 icon: const Icon(Icons.arrow_forward_rounded, size: 14),
                 label: Text(
                   'Prayer Chain',
-                  style: AppTheme.sans(fontSize: 12, fontWeight: FontWeight.w700),
+                  style: AppTheme.sans(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 onPressed: () => context.push('/prayer'),
               ),
@@ -939,9 +1036,7 @@ class _HomeScreenState extends State<HomeScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(999),
-            border: Border.all(
-              color: color.withValues(alpha: 0.35),
-            ),
+            border: Border.all(color: color.withValues(alpha: 0.35)),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -991,7 +1086,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: context.churchColors.success.withValues(alpha: 0.14),
+                      color: context.churchColors.success.withValues(
+                        alpha: 0.14,
+                      ),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -1059,7 +1156,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   badgeColor: context.churchColors.error,
                   icon: Icons.volunteer_activism_rounded,
                   title: 'Intercession',
-                  subtitle: 'Stand together in faith for church needs & healing',
+                  subtitle:
+                      'Stand together in faith for church needs & healing',
                   actionLabel: 'Pray Together',
                   route: '/prayer',
                 ),
@@ -1124,7 +1222,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Icon(icon, color: badgeColor, size: 18),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 7,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: badgeColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(6),
@@ -1199,7 +1300,8 @@ class _HomeScreenState extends State<HomeScreen> {
           sermon = Sermon.fallback;
         }
 
-        final preachedDateStr = DateFormat('MMMM d, yyyy').format(sermon.preachedOn);
+        final preachedDateStr = DateFormat('MMMM d, yyyy')
+            .format(sermon.preachedOn);
 
         return Container(
           decoration: BoxDecoration(
@@ -1229,7 +1331,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: context.churchColors.secondary.withValues(alpha: 0.14),
+                          color: context.churchColors.secondary.withValues(
+                            alpha: 0.14,
+                          ),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
@@ -1252,14 +1356,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   TextButton.icon(
                     style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       minimumSize: Size.zero,
                       foregroundColor: context.churchColors.secondary,
                     ),
                     icon: const Icon(Icons.video_library_rounded, size: 14),
                     label: const Text(
                       'All Sermons',
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                     onPressed: () => context.push('/sermons'),
                   ),
@@ -1291,7 +1401,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               child: Icon(
                                 Icons.movie_filter_rounded,
                                 size: 36,
-                                color: context.churchColors.textMuted.withValues(alpha: 0.5),
+                                color: context.churchColors.textMuted
+                                    .withValues(alpha: 0.5),
                               ),
                             ),
                           ),
@@ -1315,8 +1426,12 @@ class _HomeScreenState extends State<HomeScreen> {
                               begin: Alignment.topCenter,
                               end: Alignment.bottomCenter,
                               colors: [
-                                context.churchColors.surface.withValues(alpha: 0.0),
-                                context.churchColors.raised.withValues(alpha: 0.45),
+                                context.churchColors.surface.withValues(
+                                  alpha: 0.0,
+                                ),
+                                context.churchColors.raised.withValues(
+                                  alpha: 0.45,
+                                ),
                               ],
                             ),
                           ),
@@ -1327,11 +1442,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         width: 52,
                         height: 52,
                         decoration: BoxDecoration(
-                          color: context.churchColors.surface.withValues(alpha: 0.92),
+                          color: context.churchColors.surface.withValues(
+                            alpha: 0.92,
+                          ),
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: context.churchColors.text.withValues(alpha: 0.2),
+                              color: context.churchColors.text.withValues(
+                                alpha: 0.2,
+                              ),
                               blurRadius: 12,
                             ),
                           ],
@@ -1347,12 +1466,19 @@ class _HomeScreenState extends State<HomeScreen> {
                         bottom: 10,
                         right: 10,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
-                            color: context.churchColors.surface.withValues(alpha: 0.92),
+                            color: context.churchColors.surface.withValues(
+                              alpha: 0.92,
+                            ),
                             borderRadius: BorderRadius.circular(6),
                             border: Border.all(
-                              color: context.churchColors.border.withValues(alpha: 0.6),
+                              color: context.churchColors.border.withValues(
+                                alpha: 0.6,
+                              ),
                             ),
                           ),
                           child: Row(
@@ -1442,7 +1568,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ],
               ),
-              if (sermon.description != null && sermon.description!.isNotEmpty) ...[
+              if (sermon.description != null &&
+                  sermon.description!.isNotEmpty) ...[
                 const SizedBox(height: 8),
                 Text(
                   sermon.description!,
@@ -1473,12 +1600,18 @@ class _HomeScreenState extends State<HomeScreen> {
                       icon: const Icon(Icons.play_arrow_rounded, size: 18),
                       label: const Text(
                         'Watch Sermon',
-                        style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                       onPressed: () async {
                         final uri = Uri.parse(sermon.youtubeUrl);
                         if (await canLaunchUrl(uri)) {
-                          await launchUrl(uri, mode: LaunchMode.externalApplication);
+                          await launchUrl(
+                            uri,
+                            mode: LaunchMode.externalApplication,
+                          );
                         }
                       },
                     ),
@@ -1486,10 +1619,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(width: 10),
                   OutlinedButton.icon(
                     style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 14),
-                      side: BorderSide(
-                        color: context.churchColors.border,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 11,
+                        horizontal: 14,
                       ),
+                      side: BorderSide(color: context.churchColors.border),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),

@@ -95,12 +95,14 @@ class DonationReceipt extends Equatable {
       id: json['id'] as int,
       amount: (json['amount'] as num).toDouble(),
       currency: json['currency'] as String? ?? 'NPR',
-      fundId: json['fund_id'] as int,
-      fundName: json['fund_name'] as String?,
-      paymentMethod: json['payment_method'] as String? ?? 'cash',
+      fundId: (json['fund_id'] ?? 1) as int,
+      fundName: (json['fund_name'] ?? json['fund']) as String?,
+      paymentMethod: (json['payment_gateway'] ?? json['payment_method'] ?? 'manual_cash') as String,
       status: json['status'] as String? ?? 'completed',
       referenceId: json['reference_id'] as String?,
-      receivedAt: DateTime.parse(json['created_at'] as String? ?? DateTime.now().toIso8601String()),
+      receivedAt: DateTime.parse(
+        (json['created_at'] ?? json['completed_at']) as String? ?? DateTime.now().toIso8601String(),
+      ),
     );
   }
 

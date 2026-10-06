@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:noah_ark_base_app_flutter/src/core/theme/app_theme.dart';
 import 'package:noah_ark_base_app_flutter/src/core/theme/church_colors.dart';
+import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:noah_ark_base_app_flutter/src/features/events/domain/event.dart';
 import 'package:noah_ark_base_app_flutter/src/features/events/presentation/bloc/events_bloc.dart';
 
@@ -26,106 +27,283 @@ class _EventsScreenState extends State<EventsScreen> {
   EventTimeFilter _selectedFilter = EventTimeFilter.upcoming;
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Church Calendar'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () => context.read<EventsBloc>().add(const EventsFetchRequested()),
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // Filter Chips: Timeframe based per ADR 0004 (sections retired)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: EventTimeFilter.values.map((filter) {
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: ChoiceChip(
-                      label: Text(filter.label),
-                      selected: _selectedFilter == filter,
-                      onSelected: (selected) {
-                        if (selected) {
-                          setState(() => _selectedFilter = filter);
-                        }
-                      },
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
-          ),
-          const Divider(height: 1),
-          Expanded(
-            child: BlocBuilder<EventsBloc, EventsState>(
-              builder: (context, state) {
-                if (state is EventsLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (state is EventsLoaded) {
-                  final filteredEvents = _applyTimeFilter(state.events, _selectedFilter);
-
-                  if (filteredEvents.isEmpty) {
-                    return Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(24.0),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.event_busy_rounded, size: 48, color: context.churchColors.textMuted),
-                            const SizedBox(height: 12),
-                            Text(
-                              'No ${_selectedFilter.label.toLowerCase()} scheduled.',
-                              style: TextStyle(fontSize: 16, color: context.churchColors.textMuted),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }
-
-                  return ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: filteredEvents.length,
-                    itemBuilder: (context, index) {
-                      final event = filteredEvents[index];
-                      return _buildEventCard(context, event);
-                    },
-                  );
-                }
-                return const SizedBox.shrink();
-              },
-            ),
-          ),
-        ],
-      ),
-    );
+  void initState() {
+    super.initState();
+    _triggerFilterFetch(_selectedFilter);
   }
 
-  List<ChurchEvent> _applyTimeFilter(List<ChurchEvent> events, EventTimeFilter filter) {
+  void _triggerFilterFetch(EventTimeFilter filter) {
     final now = DateTime.now();
     final todayStart = DateTime(now.year, now.month, now.day);
     final weekEnd = todayStart.add(const Duration(days: 7));
 
+    DateTime? startsAfter;
+    DateTime? startsBefore;
+
     switch (filter) {
       case EventTimeFilter.upcoming:
-        return events.where((e) => e.startsAt.isAfter(todayStart.subtract(const Duration(hours: 4)))).toList();
+        startsAfter = now;
+        break;
       case EventTimeFilter.thisWeek:
-        return events
-            .where((e) =>
-                e.startsAt.isAfter(todayStart.subtract(const Duration(hours: 4))) &&
-                e.startsAt.isBefore(weekEnd))
-            .toList();
+        startsAfter = todayStart;
+        startsBefore = weekEnd;
+        break;
       case EventTimeFilter.past:
-        return events.where((e) => e.startsAt.isBefore(todayStart)).toList();
+        startsBefore = todayStart;
+        break;
     }
+
+    context.read<EventsBloc>().add(EventsFetchRequested(
+          startsAfter: startsAfter,
+          startsBefore: startsBefore,
+        ));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<AuthBloc, AuthState>(
+      builder: (context, authState) {
+        final canPost = authState is Authenticated && authState.user.role.canPostChurchEvents;
+
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('Church Calendar'),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.refresh),
+                onPressed: () => _triggerFilterFetch(_selectedFilter),
+              ),
+            ],
+          ),
+          floatingActionButton: canPost
+              ? FloatingActionButton.extended(
+                  backgroundColor: context.churchColors.primary,
+                  foregroundColor: context.churchColors.onPrimary,
+                  icon: const Icon(Icons.add_rounded),
+                  label: const Text('Post Church Event'),
+                  onPressed: () => _showCreateEventSheet(context),
+                )
+              : null,
+          body: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: EventTimeFilter.values.map((filter) {
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: ChoiceChip(
+                          label: Text(filter.label),
+                          selected: _selectedFilter == filter,
+                          onSelected: (selected) {
+                            if (selected) {
+                              setState(() => _selectedFilter = filter);
+                              _triggerFilterFetch(filter);
+                            }
+                          },
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+              const Divider(height: 1),
+              Expanded(
+                child: BlocConsumer<EventsBloc, EventsState>(
+                  listener: (context, state) {
+                    if (state is EventsLoaded && state.rsvpError != null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(state.rsvpError!),
+                          backgroundColor: context.churchColors.error,
+                        ),
+                      );
+                    }
+                  },
+                  builder: (context, state) {
+                    if (state is EventsLoading) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (state is EventsError) {
+                      return Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24.0),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.error_outline_rounded,
+                                  size: 48, color: context.churchColors.error),
+                              const SizedBox(height: 12),
+                              Text(
+                                'Unable to load church calendar.',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: context.churchColors.text,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                state.message,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: context.churchColors.textMuted,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              FilledButton.tonal(
+                                onPressed: () => _triggerFilterFetch(_selectedFilter),
+                                child: const Text('Retry'),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+                    if (state is EventsLoaded) {
+                      final events = state.events;
+
+                      if (events.isEmpty) {
+                        return Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(24.0),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.event_busy_rounded,
+                                    size: 48, color: context.churchColors.textMuted),
+                                const SizedBox(height: 12),
+                                Text(
+                                  'No ${_selectedFilter.label.toLowerCase()} scheduled.',
+                                  style: TextStyle(
+                                      fontSize: 16, color: context.churchColors.textMuted),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }
+
+                      return ListView.builder(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: events.length,
+                        itemBuilder: (context, index) {
+                          final event = events[index];
+                          return _buildEventCard(context, event);
+                        },
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showCreateEventSheet(BuildContext context) {
+    final titleController = TextEditingController();
+    final descController = TextEditingController();
+    final locationController = TextEditingController();
+    final addressController = TextEditingController();
+    final now = DateTime.now();
+    final startDate = DateTime(now.year, now.month, now.day + 1, 10, 0);
+    final endDate = DateTime(now.year, now.month, now.day + 1, 12, 0);
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: context.churchColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (sheetContext, setModalState) {
+          return Padding(
+            padding: EdgeInsets.only(
+              left: 20,
+              right: 20,
+              top: 16,
+              bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 20,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'Post Church Event',
+                    style: AppTheme.serif(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: context.churchColors.text,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  TextField(
+                    controller: titleController,
+                    decoration: const InputDecoration(labelText: 'Event Title'),
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: descController,
+                    maxLines: 2,
+                    decoration: const InputDecoration(labelText: 'Description (Optional)'),
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: locationController,
+                    decoration: const InputDecoration(labelText: 'Location Name (e.g. Main Sanctuary)'),
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: addressController,
+                    decoration: const InputDecoration(labelText: 'Address (Optional)'),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: context.churchColors.primary,
+                      foregroundColor: context.churchColors.onPrimary,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    onPressed: () {
+                      final title = titleController.text.trim();
+                      if (title.isNotEmpty) {
+                        context.read<EventsBloc>().add(
+                              EventCreateRequested(
+                                title: title,
+                                description: descController.text.trim().isNotEmpty
+                                    ? descController.text.trim()
+                                    : null,
+                                startsAt: startDate,
+                                endsAt: endDate,
+                                locationName: locationController.text.trim().isNotEmpty
+                                    ? locationController.text.trim()
+                                    : null,
+                                address: addressController.text.trim().isNotEmpty
+                                    ? addressController.text.trim()
+                                    : null,
+                              ),
+                            );
+                        Navigator.pop(ctx);
+                      }
+                    },
+                    child: const Text('Publish to Calendar'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
   }
 
   Widget _buildEventCard(BuildContext context, ChurchEvent event) {

@@ -36,6 +36,27 @@ class ToggleGroupMembership extends GroupsEvent {
   List<Object?> get props => [groupId];
 }
 
+class CreateGroup extends GroupsEvent {
+  final String name;
+  final String? description;
+  final GroupType groupType;
+  final bool isOpen;
+  final String? meetingSchedule;
+  final String? meetingLocation;
+
+  const CreateGroup({
+    required this.name,
+    this.description,
+    this.groupType = GroupType.bibleStudy,
+    this.isOpen = true,
+    this.meetingSchedule,
+    this.meetingLocation,
+  });
+
+  @override
+  List<Object?> get props => [name, description, groupType, isOpen, meetingSchedule, meetingLocation];
+}
+
 abstract class GroupsState extends Equatable {
   const GroupsState();
 
@@ -55,15 +76,17 @@ class GroupsLoaded extends GroupsState {
   final List<Group> allGroups;
   final List<Group> filteredGroups;
   final GroupType? selectedType;
+  final String? membershipError;
 
   const GroupsLoaded({
     required this.allGroups,
     required this.filteredGroups,
     this.selectedType,
+    this.membershipError,
   });
 
   @override
-  List<Object?> get props => [allGroups, filteredGroups, selectedType];
+  List<Object?> get props => [allGroups, filteredGroups, selectedType, membershipError];
 }
 
 class GroupsError extends GroupsState {
@@ -83,6 +106,7 @@ class GroupsBloc extends Bloc<GroupsEvent, GroupsState> {
     on<RefreshGroups>(_onRefreshGroups);
     on<FilterGroupsByType>(_onFilterByType);
     on<ToggleGroupMembership>(_onToggleMembership);
+    on<CreateGroup>(_onCreateGroup);
   }
 
   Future<void> _onLoadGroups(
@@ -150,6 +174,25 @@ class GroupsBloc extends Bloc<GroupsEvent, GroupsState> {
     }
   }
 
+  Future<void> _onCreateGroup(
+    CreateGroup event,
+    Emitter<GroupsState> emit,
+  ) async {
+    try {
+      await repository.createGroup(
+        name: event.name,
+        description: event.description,
+        groupType: event.groupType,
+        isOpen: event.isOpen,
+        meetingSchedule: event.meetingSchedule,
+        meetingLocation: event.meetingLocation,
+      );
+      add(const RefreshGroups());
+    } catch (e) {
+      emit(GroupsError(e.toString()));
+    }
+  }
+
   Future<void> _onToggleMembership(
     ToggleGroupMembership event,
     Emitter<GroupsState> emit,
@@ -186,11 +229,22 @@ class GroupsBloc extends Bloc<GroupsEvent, GroupsState> {
         ),
       );
 
-      // Perform background API call
-      if (newIsMember) {
-        await repository.joinGroup(event.groupId);
-      } else {
-        await repository.leaveGroup(event.groupId);
+      try {
+        if (newIsMember) {
+          await repository.joinGroup(event.groupId);
+        } else {
+          await repository.leaveGroup(event.groupId);
+        }
+      } catch (e) {
+        emit(
+          GroupsLoaded(
+            allGroups: current.allGroups,
+            filteredGroups: current.filteredGroups,
+            selectedType: current.selectedType,
+            membershipError:
+                'Failed to ${newIsMember ? "join" : "leave"} group: ${e.toString()}',
+          ),
+        );
       }
     }
   }

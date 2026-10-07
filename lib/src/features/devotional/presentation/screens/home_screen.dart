@@ -17,6 +17,8 @@ import 'package:noah_ark_base_app_flutter/src/features/devotional/domain/daily_q
 import 'package:noah_ark_base_app_flutter/src/features/devotional/presentation/bloc/devotional_bloc.dart';
 import 'package:noah_ark_base_app_flutter/src/features/sermons/domain/sermon.dart';
 import 'package:noah_ark_base_app_flutter/src/features/sermons/presentation/bloc/sermons_bloc.dart';
+import 'package:noah_ark_base_app_flutter/src/features/service_times/domain/service_time.dart';
+import 'package:noah_ark_base_app_flutter/src/features/service_times/presentation/bloc/service_times_bloc.dart';
 import 'package:noah_ark_base_app_flutter/src/shared/app_icon.dart';
 import 'package:noah_ark_base_app_flutter/src/shared/app_rounded_card.dart';
 import 'package:noah_ark_base_app_flutter/src/shared/app_text.dart';
@@ -222,161 +224,153 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 12),
 
-            // Sunday Worship Spotlight: the one filled moment on the page
-            Container(
-              decoration: BoxDecoration(
-                gradient: AppTheme.heroGradient(context.churchColors),
-                borderRadius: BorderRadius.circular(22),
-                boxShadow: [
-                  BoxShadow(
-                    color: context.churchColors.primary.withValues(alpha: 0.28),
-                    blurRadius: 24,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
+            // Worship spotlight: the one filled moment on the page
+            _buildWorshipSpotlight(context),
+          ],
+        );
+      },
+    );
+  }
+
+  /// The church's next Service Time, with Order of Service. A church with
+  /// none shows the card without a day or time rather than an invented one.
+  Widget _buildWorshipSpotlight(BuildContext context) {
+    return BlocBuilder<ServiceTimesBloc, ServiceTimesState>(
+      builder: (context, state) {
+        final next = ServiceTime.next(state.serviceTimes, DateTime.now());
+        final others = state.serviceTimes.where((s) => s != next);
+        final details = [
+          if (next?.location != null) next!.location!,
+          ...others.map((s) => '${s.name} · ${s.dayName} ${s.formattedTime}'),
+        ].join('\n');
+        final subtitle = details.isEmpty
+            ? 'Worship, communion, and preaching of the Word'
+            : details;
+        return Container(
+          decoration: BoxDecoration(
+            gradient: AppTheme.heroGradient(context.churchColors),
+            borderRadius: BorderRadius.circular(22),
+            boxShadow: [
+              BoxShadow(
+                color: context.churchColors.primary.withValues(alpha: 0.28),
+                blurRadius: 24,
+                offset: const Offset(0, 10),
               ),
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            ],
+          ),
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: context.churchColors.onPrimary.withValues(
-                            alpha: 0.16,
-                          ),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.wb_sunny_rounded,
-                          size: 18,
-                          color: context.churchColors.onPrimary,
-                        ),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: context.churchColors.onPrimary.withValues(
+                        alpha: 0.16,
                       ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          'SUNDAY WORSHIP • 10:00 AM',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 0.8,
-                            color: context.churchColors.onPrimary.withValues(
-                              alpha: 0.85,
-                            ),
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          color: context.churchColors.onPrimary,
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                        child: Text(
-                          TranslationString.thisWeek.tr(),
-                          style: TextStyle(
-                            fontSize: 9.5,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 0.5,
-                            color: context.churchColors.primary,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Sunday Service & Fellowship',
-                    style: AppTheme.serif(
-                      fontSize: 25,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.4,
-                      height: 1.2,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.wb_sunny_rounded,
+                      size: 18,
                       color: context.churchColors.onPrimary,
                     ),
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Worship, communion, and preaching of the Word • Sanctuary & Livestream',
-                    style: TextStyle(
-                      fontSize: 12.5,
-                      height: 1.45,
-                      color: context.churchColors.onPrimary.withValues(
-                        alpha: 0.82,
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      next == null
+                          ? 'WEEKLY WORSHIP'
+                          : '${next.dayName.toUpperCase()} • ${next.formattedTime}',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.8,
+                        color: context.churchColors.onPrimary.withValues(
+                          alpha: 0.85,
+                        ),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: context.churchColors.onPrimary,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Text(
+                      TranslationString.thisWeek.tr(),
+                      style: TextStyle(
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.5,
+                        color: context.churchColors.primary,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 18),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: FilledButton.icon(
-                          style: FilledButton.styleFrom(
-                            backgroundColor: context.churchColors.onPrimary,
-                            foregroundColor: context.churchColors.primary,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          icon: const Icon(
-                            Icons.auto_stories_rounded,
-                            size: 16,
-                          ),
-                          label: const Text(
-                            'Order of Service',
-                            style: TextStyle(
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          onPressed: () => context.push(AppRoutes.bulletins),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                next?.name ?? 'Worship With Us',
+                style: AppTheme.serif(
+                  fontSize: 25,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.4,
+                  height: 1.2,
+                  color: context.churchColors.onPrimary,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  fontSize: 12.5,
+                  height: 1.45,
+                  color: context.churchColors.onPrimary.withValues(
+                    alpha: 0.82,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 18),
+              Row(
+                children: [
+                  Expanded(
+                    child: FilledButton.icon(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: context.churchColors.onPrimary,
+                        foregroundColor: context.churchColors.primary,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            foregroundColor: context.churchColors.onPrimary,
-                            side: BorderSide(
-                              color: context.churchColors.onPrimary.withValues(
-                                alpha: 0.5,
-                              ),
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          icon: const AppIcon(
-                            Icons.smart_display_rounded,
-                            size: 16,
-                          ),
-                          label: Text(
-                            TranslationString.watchLive.tr(),
-                            style: const TextStyle(
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          onPressed: () => context.push(AppRoutes.sermons),
+                      icon: const Icon(
+                        Icons.auto_stories_rounded,
+                        size: 16,
+                      ),
+                      label: const Text(
+                        'Order of Service',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
-                    ],
+                      onPressed: () => context.push(AppRoutes.bulletins),
+                    ),
                   ),
                 ],
               ),
-            ),
-          ],
+            ],
+          ),
         );
       },
     );
@@ -989,9 +983,17 @@ class _HomeScreenState extends State<HomeScreen> {
           _buildActionPill(
             context: context,
             icon: Icons.auto_stories_rounded,
-            label: 'Sunday Bulletin',
+            label: 'Bulletins',
             color: context.churchColors.primary,
             route: AppRoutes.bulletins,
+          ),
+          const SizedBox(width: 8),
+          _buildActionPill(
+            context: context,
+            icon: Icons.campaign_rounded,
+            label: 'Announcements',
+            color: context.churchColors.warning,
+            route: AppRoutes.announcements,
           ),
           const SizedBox(width: 8),
           _buildActionPill(

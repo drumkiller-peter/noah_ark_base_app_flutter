@@ -63,6 +63,9 @@ class ApiEndpoints {
   // Sermons
   static const String sermons = '/sermons';
 
+  // The church's regular weekly worship, readable with a guest token
+  static const String serviceTimes = '/service-times';
+
   // The church's colors, readable with a guest token
   static const String theme = '/theme';
 }

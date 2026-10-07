@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:noah_ark_base_app_flutter/src/core/routing/app_routes.dart';
 import 'package:noah_ark_base_app_flutter/src/core/routing/main_shell.dart';
+import 'package:noah_ark_base_app_flutter/src/features/announcements/presentation/screens/announcements_screen.dart';
 import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/screens/login_screen.dart';
 import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/screens/register_screen.dart';
 import 'package:noah_ark_base_app_flutter/src/features/bulletins/presentation/screens/bulletins_screen.dart';
@@ -78,6 +79,11 @@ GoRouter createAppRouter() {
         parentNavigatorKey: _rootNavigatorKey,
         path: AppRoutes.bulletins,
         builder: (context, state) => const BulletinsScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: AppRoutes.announcements,
+        builder: (context, state) => const AnnouncementsScreen(),
       ),
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,

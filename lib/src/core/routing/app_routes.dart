@@ -10,6 +10,7 @@ abstract final class AppRoutes {
 
   // Content & Features
   static const String bulletins = '/bulletins';
+  static const String announcements = '/announcements';
   static const String sermons = '/sermons';
   static const String groups = '/groups';
   static const String groupDetailsPattern = '/groups/:id';

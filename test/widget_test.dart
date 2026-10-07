@@ -8,6 +8,7 @@ import 'package:noah_ark_base_app_flutter/src/core/config/app_config.dart';
 import 'package:noah_ark_base_app_flutter/src/core/localization/bilingual_text.dart';
 import 'package:noah_ark_base_app_flutter/src/core/theme/app_theme.dart';
 import 'package:noah_ark_base_app_flutter/src/core/theme/church_colors.dart';
+import 'package:noah_ark_base_app_flutter/src/features/announcements/domain/announcement.dart';
 import 'package:noah_ark_base_app_flutter/src/features/auth/domain/user.dart';
 import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/screens/login_screen.dart';
@@ -25,6 +26,7 @@ import 'package:noah_ark_base_app_flutter/src/features/prayer/presentation/bloc/
 import 'package:noah_ark_base_app_flutter/src/features/prayer/presentation/screens/prayer_screen.dart';
 import 'package:noah_ark_base_app_flutter/src/features/sermons/domain/sermon.dart';
 import 'package:noah_ark_base_app_flutter/src/features/sermons/presentation/bloc/sermons_bloc.dart';
+import 'package:noah_ark_base_app_flutter/src/features/service_times/presentation/bloc/service_times_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -301,6 +303,7 @@ void main() {
       AuthBloc? authBloc,
       DevotionalBloc? devotionalBloc,
       SermonsBloc? sermonsBloc,
+      ServiceTimesBloc? serviceTimesBloc,
     }) {
       final appConfig = AppConfig.resolve();
       return EasyLocalization(
@@ -319,6 +322,9 @@ void main() {
               ),
               BlocProvider<SermonsBloc>.value(
                 value: sermonsBloc ?? TestSermonsBloc(),
+              ),
+              BlocProvider<ServiceTimesBloc>.value(
+                value: serviceTimesBloc ?? TestServiceTimesBloc(),
               ),
             ],
             child: Builder(
@@ -372,14 +378,15 @@ void main() {
       expect(find.text('Noah Ark Fellowship'), findsOneWidget);
       expect(find.text('Welcome to Fellowship'), findsOneWidget);
 
-      // 2. Sunday Worship Spotlight
-      expect(find.text('SUNDAY WORSHIP • 10:00 AM'), findsOneWidget);
-      expect(find.text('Sunday Service & Fellowship'), findsOneWidget);
+      // 2. Worship spotlight, with no Service Times: no day or time is invented
+      expect(find.text('WEEKLY WORSHIP'), findsOneWidget);
+      expect(find.text('Worship With Us'), findsOneWidget);
       expect(find.text('Order of Service'), findsOneWidget);
-      expect(find.text('Watch Live'), findsOneWidget);
+      expect(find.text('Watch Live'), findsNothing);
 
       // 3. Slim Action Pills (Replacing 8-box grid)
-      expect(find.text('Sunday Bulletin'), findsOneWidget);
+      expect(find.text('Bulletins'), findsOneWidget);
+      expect(find.text('Announcements'), findsOneWidget);
       expect(find.text('Watch Sermons'), findsOneWidget);
       expect(find.text('Small Groups'), findsOneWidget);
       expect(
@@ -431,8 +438,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Welcome to Fellowship'), findsOneWidget);
-      expect(find.text('SUNDAY WORSHIP • 10:00 AM'), findsOneWidget);
-      expect(find.text('Sunday Bulletin'), findsOneWidget);
+      expect(find.text('WEEKLY WORSHIP'), findsOneWidget);
+      expect(find.text('Bulletins'), findsOneWidget);
       expect(find.text("TODAY'S SCRIPTURE"), findsOneWidget);
       expect(find.text('REFLECTION'), findsOneWidget);
       expect(find.text('PRAYER FOR TODAY'), findsOneWidget);
@@ -633,6 +640,13 @@ class TestDevotionalBloc extends Bloc<DevotionalEvent, DevotionalState>
 class TestSermonsBloc extends Bloc<SermonsEvent, SermonsState>
     implements SermonsBloc {
   TestSermonsBloc([super.initialState = const SermonsInitial()]);
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class TestServiceTimesBloc extends Bloc<ServiceTimesEvent, ServiceTimesState>
+    implements ServiceTimesBloc {
+  TestServiceTimesBloc([super.initialState = const ServiceTimesState()]);
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

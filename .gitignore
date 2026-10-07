@@ -52,6 +52,7 @@ app.*.map.json
 # Local build settings, including the app's API client secret (copy .env.example),
 # and the code generated from them
 .env
+.env.example
 churches/*/.env
 lib/src/core/config/env.g.dart
 build/

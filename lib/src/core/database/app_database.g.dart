@@ -2223,6 +2223,285 @@ class CachedThemesCompanion extends UpdateCompanion<CachedTheme> {
   }
 }
 
+class $CachedServiceTimesTable extends CachedServiceTimes
+    with TableInfo<$CachedServiceTimesTable, CachedServiceTime> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CachedServiceTimesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _tenantKeyMeta = const VerificationMeta(
+    'tenantKey',
+  );
+  @override
+  late final GeneratedColumn<String> tenantKey = GeneratedColumn<String>(
+    'tenant_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _serviceTimesJsonMeta = const VerificationMeta(
+    'serviceTimesJson',
+  );
+  @override
+  late final GeneratedColumn<String> serviceTimesJson = GeneratedColumn<String>(
+    'service_times_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _fetchedAtMeta = const VerificationMeta(
+    'fetchedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> fetchedAt = GeneratedColumn<DateTime>(
+    'fetched_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    tenantKey,
+    serviceTimesJson,
+    fetchedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'cached_service_times';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CachedServiceTime> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('tenant_key')) {
+      context.handle(
+        _tenantKeyMeta,
+        tenantKey.isAcceptableOrUnknown(data['tenant_key']!, _tenantKeyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_tenantKeyMeta);
+    }
+    if (data.containsKey('service_times_json')) {
+      context.handle(
+        _serviceTimesJsonMeta,
+        serviceTimesJson.isAcceptableOrUnknown(
+          data['service_times_json']!,
+          _serviceTimesJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_serviceTimesJsonMeta);
+    }
+    if (data.containsKey('fetched_at')) {
+      context.handle(
+        _fetchedAtMeta,
+        fetchedAt.isAcceptableOrUnknown(data['fetched_at']!, _fetchedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_fetchedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {tenantKey};
+  @override
+  CachedServiceTime map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CachedServiceTime(
+      tenantKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}tenant_key'],
+      )!,
+      serviceTimesJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}service_times_json'],
+      )!,
+      fetchedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}fetched_at'],
+      )!,
+    );
+  }
+
+  @override
+  $CachedServiceTimesTable createAlias(String alias) {
+    return $CachedServiceTimesTable(attachedDatabase, alias);
+  }
+}
+
+class CachedServiceTime extends DataClass
+    implements Insertable<CachedServiceTime> {
+  final String tenantKey;
+  final String serviceTimesJson;
+  final DateTime fetchedAt;
+  const CachedServiceTime({
+    required this.tenantKey,
+    required this.serviceTimesJson,
+    required this.fetchedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['tenant_key'] = Variable<String>(tenantKey);
+    map['service_times_json'] = Variable<String>(serviceTimesJson);
+    map['fetched_at'] = Variable<DateTime>(fetchedAt);
+    return map;
+  }
+
+  CachedServiceTimesCompanion toCompanion(bool nullToAbsent) {
+    return CachedServiceTimesCompanion(
+      tenantKey: Value(tenantKey),
+      serviceTimesJson: Value(serviceTimesJson),
+      fetchedAt: Value(fetchedAt),
+    );
+  }
+
+  factory CachedServiceTime.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CachedServiceTime(
+      tenantKey: serializer.fromJson<String>(json['tenantKey']),
+      serviceTimesJson: serializer.fromJson<String>(json['serviceTimesJson']),
+      fetchedAt: serializer.fromJson<DateTime>(json['fetchedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'tenantKey': serializer.toJson<String>(tenantKey),
+      'serviceTimesJson': serializer.toJson<String>(serviceTimesJson),
+      'fetchedAt': serializer.toJson<DateTime>(fetchedAt),
+    };
+  }
+
+  CachedServiceTime copyWith({
+    String? tenantKey,
+    String? serviceTimesJson,
+    DateTime? fetchedAt,
+  }) => CachedServiceTime(
+    tenantKey: tenantKey ?? this.tenantKey,
+    serviceTimesJson: serviceTimesJson ?? this.serviceTimesJson,
+    fetchedAt: fetchedAt ?? this.fetchedAt,
+  );
+  CachedServiceTime copyWithCompanion(CachedServiceTimesCompanion data) {
+    return CachedServiceTime(
+      tenantKey: data.tenantKey.present ? data.tenantKey.value : this.tenantKey,
+      serviceTimesJson: data.serviceTimesJson.present
+          ? data.serviceTimesJson.value
+          : this.serviceTimesJson,
+      fetchedAt: data.fetchedAt.present ? data.fetchedAt.value : this.fetchedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CachedServiceTime(')
+          ..write('tenantKey: $tenantKey, ')
+          ..write('serviceTimesJson: $serviceTimesJson, ')
+          ..write('fetchedAt: $fetchedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(tenantKey, serviceTimesJson, fetchedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CachedServiceTime &&
+          other.tenantKey == this.tenantKey &&
+          other.serviceTimesJson == this.serviceTimesJson &&
+          other.fetchedAt == this.fetchedAt);
+}
+
+class CachedServiceTimesCompanion extends UpdateCompanion<CachedServiceTime> {
+  final Value<String> tenantKey;
+  final Value<String> serviceTimesJson;
+  final Value<DateTime> fetchedAt;
+  final Value<int> rowid;
+  const CachedServiceTimesCompanion({
+    this.tenantKey = const Value.absent(),
+    this.serviceTimesJson = const Value.absent(),
+    this.fetchedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CachedServiceTimesCompanion.insert({
+    required String tenantKey,
+    required String serviceTimesJson,
+    required DateTime fetchedAt,
+    this.rowid = const Value.absent(),
+  }) : tenantKey = Value(tenantKey),
+       serviceTimesJson = Value(serviceTimesJson),
+       fetchedAt = Value(fetchedAt);
+  static Insertable<CachedServiceTime> custom({
+    Expression<String>? tenantKey,
+    Expression<String>? serviceTimesJson,
+    Expression<DateTime>? fetchedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (tenantKey != null) 'tenant_key': tenantKey,
+      if (serviceTimesJson != null) 'service_times_json': serviceTimesJson,
+      if (fetchedAt != null) 'fetched_at': fetchedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CachedServiceTimesCompanion copyWith({
+    Value<String>? tenantKey,
+    Value<String>? serviceTimesJson,
+    Value<DateTime>? fetchedAt,
+    Value<int>? rowid,
+  }) {
+    return CachedServiceTimesCompanion(
+      tenantKey: tenantKey ?? this.tenantKey,
+      serviceTimesJson: serviceTimesJson ?? this.serviceTimesJson,
+      fetchedAt: fetchedAt ?? this.fetchedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (tenantKey.present) {
+      map['tenant_key'] = Variable<String>(tenantKey.value);
+    }
+    if (serviceTimesJson.present) {
+      map['service_times_json'] = Variable<String>(serviceTimesJson.value);
+    }
+    if (fetchedAt.present) {
+      map['fetched_at'] = Variable<DateTime>(fetchedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CachedServiceTimesCompanion(')
+          ..write('tenantKey: $tenantKey, ')
+          ..write('serviceTimesJson: $serviceTimesJson, ')
+          ..write('fetchedAt: $fetchedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2234,6 +2513,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   );
   late final $CachedEventsTable cachedEvents = $CachedEventsTable(this);
   late final $CachedThemesTable cachedThemes = $CachedThemesTable(this);
+  late final $CachedServiceTimesTable cachedServiceTimes =
+      $CachedServiceTimesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2244,6 +2525,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     cachedBulletins,
     cachedEvents,
     cachedThemes,
+    cachedServiceTimes,
   ];
 }
 
@@ -3424,6 +3706,183 @@ typedef $$CachedThemesTableProcessedTableManager =
       CachedTheme,
       PrefetchHooks Function()
     >;
+typedef $$CachedServiceTimesTableCreateCompanionBuilder =
+    CachedServiceTimesCompanion Function({
+      required String tenantKey,
+      required String serviceTimesJson,
+      required DateTime fetchedAt,
+      Value<int> rowid,
+    });
+typedef $$CachedServiceTimesTableUpdateCompanionBuilder =
+    CachedServiceTimesCompanion Function({
+      Value<String> tenantKey,
+      Value<String> serviceTimesJson,
+      Value<DateTime> fetchedAt,
+      Value<int> rowid,
+    });
+
+class $$CachedServiceTimesTableFilterComposer
+    extends Composer<_$AppDatabase, $CachedServiceTimesTable> {
+  $$CachedServiceTimesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get tenantKey => $composableBuilder(
+    column: $table.tenantKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get serviceTimesJson => $composableBuilder(
+    column: $table.serviceTimesJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get fetchedAt => $composableBuilder(
+    column: $table.fetchedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$CachedServiceTimesTableOrderingComposer
+    extends Composer<_$AppDatabase, $CachedServiceTimesTable> {
+  $$CachedServiceTimesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get tenantKey => $composableBuilder(
+    column: $table.tenantKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get serviceTimesJson => $composableBuilder(
+    column: $table.serviceTimesJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get fetchedAt => $composableBuilder(
+    column: $table.fetchedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$CachedServiceTimesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CachedServiceTimesTable> {
+  $$CachedServiceTimesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get tenantKey =>
+      $composableBuilder(column: $table.tenantKey, builder: (column) => column);
+
+  GeneratedColumn<String> get serviceTimesJson => $composableBuilder(
+    column: $table.serviceTimesJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get fetchedAt =>
+      $composableBuilder(column: $table.fetchedAt, builder: (column) => column);
+}
+
+class $$CachedServiceTimesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $CachedServiceTimesTable,
+          CachedServiceTime,
+          $$CachedServiceTimesTableFilterComposer,
+          $$CachedServiceTimesTableOrderingComposer,
+          $$CachedServiceTimesTableAnnotationComposer,
+          $$CachedServiceTimesTableCreateCompanionBuilder,
+          $$CachedServiceTimesTableUpdateCompanionBuilder,
+          (
+            CachedServiceTime,
+            BaseReferences<
+              _$AppDatabase,
+              $CachedServiceTimesTable,
+              CachedServiceTime
+            >,
+          ),
+          CachedServiceTime,
+          PrefetchHooks Function()
+        > {
+  $$CachedServiceTimesTableTableManager(
+    _$AppDatabase db,
+    $CachedServiceTimesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CachedServiceTimesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CachedServiceTimesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CachedServiceTimesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> tenantKey = const Value.absent(),
+                Value<String> serviceTimesJson = const Value.absent(),
+                Value<DateTime> fetchedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CachedServiceTimesCompanion(
+                tenantKey: tenantKey,
+                serviceTimesJson: serviceTimesJson,
+                fetchedAt: fetchedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String tenantKey,
+                required String serviceTimesJson,
+                required DateTime fetchedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => CachedServiceTimesCompanion.insert(
+                tenantKey: tenantKey,
+                serviceTimesJson: serviceTimesJson,
+                fetchedAt: fetchedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$CachedServiceTimesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $CachedServiceTimesTable,
+      CachedServiceTime,
+      $$CachedServiceTimesTableFilterComposer,
+      $$CachedServiceTimesTableOrderingComposer,
+      $$CachedServiceTimesTableAnnotationComposer,
+      $$CachedServiceTimesTableCreateCompanionBuilder,
+      $$CachedServiceTimesTableUpdateCompanionBuilder,
+      (
+        CachedServiceTime,
+        BaseReferences<
+          _$AppDatabase,
+          $CachedServiceTimesTable,
+          CachedServiceTime
+        >,
+      ),
+      CachedServiceTime,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -3438,4 +3897,6 @@ class $AppDatabaseManager {
       $$CachedEventsTableTableManager(_db, _db.cachedEvents);
   $$CachedThemesTableTableManager get cachedThemes =>
       $$CachedThemesTableTableManager(_db, _db.cachedThemes);
+  $$CachedServiceTimesTableTableManager get cachedServiceTimes =>
+      $$CachedServiceTimesTableTableManager(_db, _db.cachedServiceTimes);
 }

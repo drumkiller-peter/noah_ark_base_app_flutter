@@ -44,23 +44,15 @@ class BulletinsLoading extends BulletinsState {
 
 class BulletinsLoaded extends BulletinsState {
   final List<Bulletin> bulletins;
-  final List<Announcement> announcements;
   final Bulletin? selectedBulletin;
 
   const BulletinsLoaded({
     required this.bulletins,
-    required this.announcements,
     this.selectedBulletin,
   });
 
-  List<Announcement> get urgentAnnouncements =>
-      announcements.where((a) => a.isUrgent).toList();
-
-  List<Announcement> get regularAnnouncements =>
-      announcements.where((a) => !a.isUrgent).toList();
-
   @override
-  List<Object?> get props => [bulletins, announcements, selectedBulletin];
+  List<Object?> get props => [bulletins, selectedBulletin];
 }
 
 class BulletinsError extends BulletinsState {
@@ -88,11 +80,9 @@ class BulletinsBloc extends Bloc<BulletinsEvent, BulletinsState> {
     emit(const BulletinsLoading());
     try {
       final bulletins = await repository.fetchBulletins();
-      final announcements = await repository.fetchAnnouncements();
       emit(
         BulletinsLoaded(
           bulletins: bulletins,
-          announcements: announcements,
           selectedBulletin: bulletins.isNotEmpty ? bulletins.first : null,
         ),
       );
@@ -107,7 +97,6 @@ class BulletinsBloc extends Bloc<BulletinsEvent, BulletinsState> {
   ) async {
     try {
       final bulletins = await repository.fetchBulletins();
-      final announcements = await repository.fetchAnnouncements();
       final currentSelected = state is BulletinsLoaded
           ? (state as BulletinsLoaded).selectedBulletin
           : null;
@@ -115,9 +104,10 @@ class BulletinsBloc extends Bloc<BulletinsEvent, BulletinsState> {
       emit(
         BulletinsLoaded(
           bulletins: bulletins,
-          announcements: announcements,
-          selectedBulletin: currentSelected ??
-              (bulletins.isNotEmpty ? bulletins.first : null),
+          // Keep the one being read, unless it is no longer published.
+          selectedBulletin: bulletins.contains(currentSelected)
+              ? currentSelected
+              : (bulletins.isNotEmpty ? bulletins.first : null),
         ),
       );
     } catch (e) {
@@ -134,7 +124,6 @@ class BulletinsBloc extends Bloc<BulletinsEvent, BulletinsState> {
       emit(
         BulletinsLoaded(
           bulletins: current.bulletins,
-          announcements: current.announcements,
           selectedBulletin: event.bulletin,
         ),
       );

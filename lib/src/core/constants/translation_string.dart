@@ -53,6 +53,5 @@ class TranslationString {
   static const churchWorkspace = 'churchWorkspace';
   static const smallGroups = 'smallGroups';
   static const orderOfService = 'orderOfService';
-  static const watchLive = 'watchLive';
   static const scriptureCopiedToClipboard = 'scriptureCopiedToClipboard';
 }

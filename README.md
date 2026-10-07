@@ -18,20 +18,20 @@ The domain language (Member, Pastor, Prayer Chain, Theme, …) is defined in
 
 The app's screens are further along than the backend, so several of them call
 endpoints that don't exist yet and fall back to built-in sample data. If a
-screen shows Kathmandu events or a "Sunday Worship Bulletin" you never
-created, that's why.
+screen shows something you never created, that's why.
 
 | Feature | Backend calls | State |
 |---|---|---|
 | Sign in, register, stay signed in | `/auth/login`, `/auth/member/register`, `/auth/me`, `/auth/refresh`, `/auth/logout` | **Works**; an expired access token is refreshed quietly (see [Tokens](#how-a-churchs-app-works)); sanctuary brand hero header, curved bottom surface card, Newsreader greeting, and responsive member registration |
 | Theme (church colors) | `GET /theme` | **Works** — see [Theme](#theme) |
-| Home (sanctuary feed) | `GET /daily-quotes`, `GET /sermons` | **Works**; features warm Newsreader/Inter typography pairing, Sunday Worship Spotlight (10:00 AM), slim action pills (`/bulletins`, `/sermons`, `/groups`, `/admin`), interactive 7-day Weekday Date Strip, 3-Card Devotional layout (Today's Scripture with Philippians 4:6-7 fallback, Pastoral Reflection, Prayer for Today), Fellowship Highlights (`/prayer`, `/events`), and Featured Sermon spotlight with YouTube playback |
+| Home (sanctuary feed) | `GET /daily-quotes`, `GET /sermons`, `GET /service-times` | **Works**; features warm Newsreader/Inter typography pairing, a worship spotlight showing the church's next Service Time (kept on the device for offline; no day or time when the church has none) with Order of Service and no Watch Live until there is a livestream, slim action pills (`/bulletins`, `/announcements`, `/sermons`, `/groups`, `/admin`), interactive 7-day Weekday Date Strip, 3-Card Devotional layout (Today's Scripture with Philippians 4:6-7 fallback, Pastoral Reflection, Prayer for Today), Fellowship Highlights (`/prayer`, `/events`), and Featured Sermon spotlight with YouTube playback |
 | Sermons | `GET /sermons` | **Works**; sanctuary media archive with search, preacher filter chips, 16:9 video preview cards, and bottom sheet sermon notes |
 | Events and RSVP | `GET /events`, `POST /events`, `PUT`/`DELETE /events/{id}/rsvp` | **Works**; sanctuary event cards with serif date tiles; filter chips send `starts_after`/`starts_before` and `group_id`; no sample events (clean empty and error states); RSVP failures alert the member and revert; Content Managers and Youth Leaders can post church events |
 | Giving | `GET /funds`, `GET`/`POST /donations` | **Works**; sanctuary hero and fund cards with serif balances; backend payment methods (`manual_cash`, `manual_cheque`, `bank_transfer`); manual gift entry restricted to finance roles (`isFinanceManager`); failed gifts never show a fake receipt and preserve form inputs |
 | Prayer | `GET`/`POST /prayers/chain`, `GET`/`POST /prayers/private`, `POST`/`DELETE /prayers/{id}/intercessions`, `GET /prayers/private/{id}/pastoral-prayers` | **Works**; real prayer routes for Prayer Chain and Private Prayer Requests; handles unassigned pastors; optimistic intercession toggle with failure rollback; sanctuary cards with member avatar, prayer body, and "Intercede" / "Interceding" state |
 | Hymns | `GET /hymns` | **No backend route yet**; sanctuary bilingual songbook with serif typography, dual-column and single-language lyric viewer, search, and bookmarking |
-| Bulletins, announcements | `GET /bulletins`, `GET /announcements` | **No backend route yet**; sanctuary weekly worship bulletin with order of service, urgent notice banners, and PDF attachment download |
+| Bulletins | `GET /bulletins?is_published=true` | **Works**; every published Bulletin, latest date first, with several per week told apart by title; rich text, a PDF link, or both; offline shows the kept copy, never a sample |
+| Announcements (`/announcements`) | `GET /announcements` | **No backend route yet** (backend ticket `announcements/01`); its own screen, urgent ones first and marked, with empty and error states and no sample announcements |
 | Groups | `GET /groups`, `GET /groups/{id}`, `POST /groups`, `POST /groups/{id}/join`, `POST /groups/{id}/leave`, `GET`/`POST`/`DELETE /groups/{id}/members`, `POST`/`DELETE /groups/{id}/leaders/{user_id}`, `GET`/`POST`/`PATCH`/`DELETE /groups/{id}/posts` | **Works**; real backend routes with no sample data; signed-out visitors see sign-in prompt; open/closed group status; join/leave call `POST`; dedicated Group view (`/groups/:id`) with Group Posts, member management, leader appointments, and Group Event scheduling |
 | Church Workspace (`/admin`, `/workspace`) | — | **Mockup**: hardcoded numbers and rows; "Reconcile" only shows a message |
 | Watch glance (`/watch/glance`) | — | A black two-page route showing the first quote and event; there is no watchOS or Wear OS target |

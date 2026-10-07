@@ -1,4 +1,5 @@
 import 'package:noah_ark_base_app_flutter/src/core/di/dependency_injection.dart';
+import 'package:noah_ark_base_app_flutter/src/features/announcements/presentation/bloc/announcements_bloc.dart';
 import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:noah_ark_base_app_flutter/src/features/bulletins/presentation/bloc/bulletins_bloc.dart';
 import 'package:noah_ark_base_app_flutter/src/features/devotional/presentation/bloc/devotional_bloc.dart';
@@ -8,6 +9,7 @@ import 'package:noah_ark_base_app_flutter/src/features/groups/presentation/bloc/
 import 'package:noah_ark_base_app_flutter/src/features/hymns/presentation/bloc/hymns_bloc.dart';
 import 'package:noah_ark_base_app_flutter/src/features/prayer/presentation/bloc/prayer_bloc.dart';
 import 'package:noah_ark_base_app_flutter/src/features/sermons/presentation/bloc/sermons_bloc.dart';
+import 'package:noah_ark_base_app_flutter/src/features/service_times/presentation/bloc/service_times_bloc.dart';
 
 void initBlocs() {
   getIt
@@ -45,6 +47,14 @@ void initBlocs() {
     )
     ..registerLazySingleton<GroupsBloc>(
       () => GroupsBloc(repository: getIt()),
+      dispose: (bloc) => bloc.close(),
+    )
+    ..registerLazySingleton<AnnouncementsBloc>(
+      () => AnnouncementsBloc(repository: getIt()),
+      dispose: (bloc) => bloc.close(),
+    )
+    ..registerLazySingleton<ServiceTimesBloc>(
+      () => ServiceTimesBloc(repository: getIt()),
       dispose: (bloc) => bloc.close(),
     );
 }

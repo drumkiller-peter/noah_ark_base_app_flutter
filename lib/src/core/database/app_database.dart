@@ -68,6 +68,17 @@ class CachedThemes extends Table {
   Set<Column<Object>>? get primaryKey => {tenantKey};
 }
 
+/// The last Service Times fetched for each church, kept as the backend sent
+/// them so Home shows when the church worships while offline.
+class CachedServiceTimes extends Table {
+  TextColumn get tenantKey => text()();
+  TextColumn get serviceTimesJson => text()();
+  DateTimeColumn get fetchedAt => dateTime()();
+
+  @override
+  Set<Column<Object>>? get primaryKey => {tenantKey};
+}
+
 @DriftDatabase(
   tables: [
     CachedHymns,
@@ -75,19 +86,23 @@ class CachedThemes extends Table {
     CachedBulletins,
     CachedEvents,
     CachedThemes,
+    CachedServiceTimes,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onUpgrade: (m, from, to) async {
       if (from < 2) {
         await m.createTable(cachedThemes);
+      }
+      if (from < 3) {
+        await m.createTable(cachedServiceTimes);
       }
     },
   );

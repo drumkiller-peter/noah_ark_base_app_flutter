@@ -10,6 +10,8 @@ import 'package:noah_ark_base_app_flutter/src/core/routing/app_router.dart';
 import 'package:noah_ark_base_app_flutter/src/core/security/token_storage.dart';
 import 'package:noah_ark_base_app_flutter/src/core/theme/app_theme.dart';
 import 'package:noah_ark_base_app_flutter/src/core/theme/church_colors.dart';
+import 'package:noah_ark_base_app_flutter/src/features/announcements/data/announcements_repository.dart';
+import 'package:noah_ark_base_app_flutter/src/features/announcements/presentation/bloc/announcements_bloc.dart';
 import 'package:noah_ark_base_app_flutter/src/features/auth/data/auth_repository.dart';
 import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/widgets/member_session_scope.dart';
@@ -25,6 +27,8 @@ import 'package:noah_ark_base_app_flutter/src/features/hymns/presentation/bloc/h
 import 'package:noah_ark_base_app_flutter/src/features/prayer/data/prayer_repository.dart';
 import 'package:noah_ark_base_app_flutter/src/features/sermons/data/sermons_repository.dart';
 import 'package:noah_ark_base_app_flutter/src/features/sermons/presentation/bloc/sermons_bloc.dart';
+import 'package:noah_ark_base_app_flutter/src/features/service_times/data/service_times_repository.dart';
+import 'package:noah_ark_base_app_flutter/src/features/service_times/presentation/bloc/service_times_bloc.dart';
 
 class NoahArkApp extends StatefulWidget {
   /// The church's colors, chosen once at launch; see `ThemeRepository`.
@@ -61,6 +65,8 @@ class _NoahArkAppState extends State<NoahArkApp> {
     getIt<HymnsBloc>().add(const HymnsFetchRequested());
     getIt<BulletinsBloc>().add(const LoadBulletins());
     getIt<SermonsBloc>().add(const LoadSermons());
+    getIt<ServiceTimesBloc>().add(const LoadServiceTimes());
+    getIt<AnnouncementsBloc>().add(const LoadAnnouncements());
   }
 
   @override
@@ -87,6 +93,12 @@ class _NoahArkAppState extends State<NoahArkApp> {
         ),
         RepositoryProvider<SermonsRepository>.value(value: getIt<SermonsRepository>()),
         RepositoryProvider<GroupsRepository>.value(value: getIt<GroupsRepository>()),
+        RepositoryProvider<AnnouncementsRepository>.value(
+          value: getIt<AnnouncementsRepository>(),
+        ),
+        RepositoryProvider<ServiceTimesRepository>.value(
+          value: getIt<ServiceTimesRepository>(),
+        ),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -95,6 +107,8 @@ class _NoahArkAppState extends State<NoahArkApp> {
           BlocProvider<HymnsBloc>.value(value: getIt<HymnsBloc>()),
           BlocProvider<BulletinsBloc>.value(value: getIt<BulletinsBloc>()),
           BlocProvider<SermonsBloc>.value(value: getIt<SermonsBloc>()),
+          BlocProvider<ServiceTimesBloc>.value(value: getIt<ServiceTimesBloc>()),
+          BlocProvider<AnnouncementsBloc>.value(value: getIt<AnnouncementsBloc>()),
         ],
         child: MemberSessionScope(
           child: MaterialApp.router(

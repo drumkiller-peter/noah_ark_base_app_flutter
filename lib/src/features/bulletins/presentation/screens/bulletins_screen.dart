@@ -20,7 +20,7 @@ class BulletinsScreen extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Bulletin & Order of Service',
+              'Bulletins',
               style: AppTheme.serif(
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
@@ -29,7 +29,7 @@ class BulletinsScreen extends StatelessWidget {
               ),
             ),
             Text(
-              'Worship guide and parish notices',
+              'Orders of service, programs, and church documents',
               style: AppTheme.sans(
                 fontSize: 11,
                 color: context.churchColors.textMuted,
@@ -92,20 +92,12 @@ class BulletinsScreen extends StatelessWidget {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
                 children: [
-                  // Urgent Announcements Banner (if any)
-                  if (state.urgentAnnouncements.isNotEmpty) ...[
-                    ...state.urgentAnnouncements.map(
-                      (announcement) => _buildUrgentBanner(context, announcement),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-
-                  // Weekly Bulletin Header & Selector
+                  // Header & selector, latest date first
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Weekly Bulletin',
+                        'Bulletins',
                         style: AppTheme.serif(
                           fontSize: 20,
                           fontWeight: FontWeight.w800,
@@ -113,41 +105,50 @@ class BulletinsScreen extends StatelessWidget {
                           letterSpacing: -0.2,
                         ),
                       ),
-                      if (state.bulletins.length > 1)
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: context.churchColors.raised,
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                              color: context.churchColors.border.withValues(alpha: 0.6),
+                      if (state.bulletins.length > 1) ...[
+                        const SizedBox(width: 12),
+                        // Several Bulletins can share a date, so each is named by its title.
+                        Flexible(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: context.churchColors.raised,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: context.churchColors.border.withValues(alpha: 0.6),
+                              ),
                             ),
-                          ),
-                          child: DropdownButton<Bulletin>(
-                            value: state.selectedBulletin,
-                            underline: const SizedBox(),
-                            icon: Icon(
-                              Icons.arrow_drop_down_rounded,
-                              color: context.churchColors.primary,
+                            child: DropdownButton<Bulletin>(
+                              isExpanded: true,
+                              value: state.selectedBulletin,
+                              underline: const SizedBox(),
+                              icon: Icon(
+                                Icons.arrow_drop_down_rounded,
+                                color: context.churchColors.primary,
+                              ),
+                              style: AppTheme.sans(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w600,
+                                color: context.churchColors.text,
+                              ),
+                              items: state.bulletins.map((b) {
+                                return DropdownMenuItem<Bulletin>(
+                                  value: b,
+                                  child: Text(
+                                    '${b.title} · ${DateFormat('MMM d').format(b.weekOf)}',
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                );
+                              }).toList(),
+                              onChanged: (selected) {
+                                if (selected != null) {
+                                  context.read<BulletinsBloc>().add(SelectBulletin(selected));
+                                }
+                              },
                             ),
-                            style: AppTheme.sans(
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w600,
-                              color: context.churchColors.text,
-                            ),
-                            items: state.bulletins.map((b) {
-                              return DropdownMenuItem<Bulletin>(
-                                value: b,
-                                child: Text(DateFormat('MMM d, yyyy').format(b.weekOf)),
-                              );
-                            }).toList(),
-                            onChanged: (selected) {
-                              if (selected != null) {
-                                context.read<BulletinsBloc>().add(SelectBulletin(selected));
-                              }
-                            },
                           ),
                         ),
+                      ],
                     ],
                   ),
                   const SizedBox(height: 12),
@@ -166,36 +167,6 @@ class BulletinsScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-
-                  const SizedBox(height: 24),
-
-                  // Church Announcements Header
-                  Text(
-                    'Church Announcements',
-                    style: AppTheme.serif(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                      color: context.churchColors.text,
-                      letterSpacing: -0.2,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  if (state.regularAnnouncements.isEmpty)
-                    Container(
-                      padding: const EdgeInsets.all(24),
-                      decoration: AppTheme.sanctuaryCard(context.churchColors, radius: 20),
-                      child: Center(
-                        child: Text(
-                          'No upcoming announcements.',
-                          style: AppTheme.sans(color: context.churchColors.textMuted),
-                        ),
-                      ),
-                    )
-                  else
-                    ...state.regularAnnouncements.map(
-                      (announcement) => _buildAnnouncementCard(context, announcement),
-                    ),
                 ],
               ),
             );
@@ -203,74 +174,6 @@ class BulletinsScreen extends StatelessWidget {
 
           return const SizedBox.shrink();
         },
-      ),
-    );
-  }
-
-  Widget _buildUrgentBanner(BuildContext context, Announcement announcement) {
-    return Container(
-      decoration: BoxDecoration(
-        color: context.churchColors.error.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: context.churchColors.error.withValues(alpha: 0.4),
-          width: 1.2,
-        ),
-      ),
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(Icons.campaign_rounded, color: context.churchColors.error, size: 24),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: context.churchColors.error,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        'URGENT',
-                        style: TextStyle(
-                          color: context.churchColors.onError,
-                          fontSize: 9.5,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        announcement.title,
-                        style: AppTheme.serif(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: context.churchColors.error,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  announcement.body,
-                  style: AppTheme.sans(
-                    fontSize: 13,
-                    height: 1.45,
-                    color: context.churchColors.text,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -302,7 +205,7 @@ class BulletinsScreen extends StatelessWidget {
                     ),
                     const SizedBox(width: 5),
                     Text(
-                      'ORDER OF SERVICE',
+                      'BULLETIN',
                       style: AppTheme.trackingBadge(color: context.churchColors.primary),
                     ),
                   ],
@@ -336,7 +239,7 @@ class BulletinsScreen extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            'Week of $weekStr',
+            weekStr,
             style: AppTheme.sans(
               fontSize: 12,
               color: context.churchColors.textMuted,
@@ -349,7 +252,7 @@ class BulletinsScreen extends StatelessWidget {
             _renderBulletinContent(context, bulletin.contentHtml!)
           else
             Text(
-              'Full order of service is available in the attached PDF bulletin.',
+              'This bulletin is in the attached PDF.',
               style: AppTheme.serif(
                 fontSize: 14,
                 fontStyle: FontStyle.italic,
@@ -377,60 +280,6 @@ class BulletinsScreen extends StatelessWidget {
         fontSize: 13.5,
         height: 1.6,
         color: context.churchColors.text,
-      ),
-    );
-  }
-
-  Widget _buildAnnouncementCard(BuildContext context, Announcement announcement) {
-    final dateStr = DateFormat('MMM d, yyyy').format(announcement.publishAt);
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: AppTheme.sanctuaryCard(context.churchColors, radius: 16),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  announcement.title,
-                  style: AppTheme.serif(
-                    fontSize: 15.5,
-                    fontWeight: FontWeight.w700,
-                    color: context.churchColors.text,
-                  ),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: context.churchColors.raised,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  dateStr,
-                  style: AppTheme.sans(
-                    fontSize: 11,
-                    color: context.churchColors.textMuted,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            announcement.body,
-            style: AppTheme.sans(
-              fontSize: 13,
-              color: context.churchColors.textMuted,
-              height: 1.45,
-            ),
-          ),
-        ],
       ),
     );
   }

@@ -67,14 +67,18 @@ A time-bound notice to the whole church, such as a schedule change or an urgent 
 _Avoid_: notice, section announcement
 
 **Bulletin**:
-A church's weekly bulletin, one per week, published for the whole church.
-_Avoid_: newsletter, weekly
+A document a church publishes for all its Members to read, such as the week's order of service or a conference program, as rich text, a PDF, or both. A church may publish several in a week, and past ones stay to look back through. A short notice that should go away after a date is an Announcement instead.
+_Avoid_: newsletter, weekly, Saturday fellowship
 
 ### Calendar
 
 **Event**:
 A dated gathering on a church's calendar, either church-wide or belonging to one Group. A church-wide Event is posted by a Pastor, Admin, or Youth Leader; a Group's Event is posted by its Group Leaders or a Pastor or Admin, and only that Group's Members and the church's Pastors and Admins see it.
 _Avoid_: section event, youth event
+
+**Service Time**:
+A regular weekly gathering for worship, such as "Nepali Worship, Saturday 10:00 AM, Main Hall", shown in the church's app to anyone. A church may have several. It repeats every week and is not an Event; a one-off change to it is an Announcement.
+_Avoid_: service schedule, worship time, Sunday service
 
 ### Sermons
 

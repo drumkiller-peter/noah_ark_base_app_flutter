@@ -62,3 +62,6 @@ build/
 .agents/
 .dart_tool/
 .fvm/
+
+# Weekly report dry-run output
+weekly-report.html

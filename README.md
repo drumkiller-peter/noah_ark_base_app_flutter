@@ -222,6 +222,33 @@ flutter test       # unit tests for models and config, in test/widget_test.dart
 
 ---
 
+## Weekly report email
+
+Every Friday at 12:30 UTC, [`weekly-report.yml`](.github/workflows/weekly-report.yml)
+emails a summary of the past week's commits (on every branch) and pushes,
+written by Gemini's free API, followed by the full commit list. If Gemini fails,
+the email still goes out with the commit list. Everything it uses is free.
+The commit messages go to Google, and on the free tier Google may use them to
+improve its products.
+
+Setup, once. Under **Settings → Secrets and variables → Actions**, add these
+repository secrets:
+
+| Secret | Value |
+|---|---|
+| `GEMINI_API_KEY` | a key from [Google AI Studio](https://aistudio.google.com/apikey) |
+| `SMTP_USERNAME` | the Gmail address that sends the report |
+| `SMTP_PASSWORD` | a Gmail [App Password](https://myaccount.google.com/apppasswords) (needs 2-Step Verification), not the account password |
+| `REPORT_TO` | optional: recipients, comma-separated; defaults to `SMTP_USERNAME` |
+
+To pick a model other than `gemini-flash-latest`, set a repository *variable*
+`GEMINI_MODEL`. To send a report now, open **Actions → Weekly report → Run
+workflow**. To preview it locally without sending anything, run
+`python3 .github/scripts/weekly_report.py --dry-run`, which writes
+`weekly-report.html`. To change the day or time, edit the `cron` line.
+
+---
+
 ## Known gaps
 
 Beyond the feature table above:

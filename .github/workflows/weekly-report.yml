@@ -1,0 +1,36 @@
+name: Weekly report
+
+# Emails a Gemini-written summary of the last week's commits and pushes.
+# Setup and secrets: see "Weekly report email" in the README.
+
+on:
+  schedule:
+    - cron: "30 12 * * 5" # Fridays 12:30 UTC; scheduled runs use the default branch
+  workflow_dispatch: # "Run workflow" button, for testing
+    inputs:
+      days:
+        description: "How many days back to report"
+        default: "7"
+
+permissions:
+  contents: read
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0 # full history of every branch
+
+      - name: Summarize and email
+        run: python3 .github/scripts/weekly_report.py
+        env:
+          REPORT_DAYS: ${{ inputs.days || '7' }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          REPORT_TO: ${{ secrets.REPORT_TO }}
+          GITHUB_TOKEN: ${{ github.token }}

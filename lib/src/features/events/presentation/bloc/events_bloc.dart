@@ -94,6 +94,10 @@ class EventsError extends EventsState {
 class EventsBloc extends Bloc<EventsEvent, EventsState> {
   final EventsRepository repository;
 
+  /// Counts fetches, so an older fetch that answers late doesn't overwrite a
+  /// newer one (say, the Events screen's filtered list).
+  int _latestFetch = 0;
+
   EventsBloc({required this.repository}) : super(const EventsInitial()) {
     on<EventsFetchRequested>(_onFetchRequested);
     on<EventCreateRequested>(_onCreateRequested);
@@ -105,6 +109,7 @@ class EventsBloc extends Bloc<EventsEvent, EventsState> {
     EventsFetchRequested event,
     Emitter<EventsState> emit,
   ) async {
+    final fetch = ++_latestFetch;
     emit(const EventsLoading());
     try {
       final events = await repository.getEvents(
@@ -112,9 +117,9 @@ class EventsBloc extends Bloc<EventsEvent, EventsState> {
         startsBefore: event.startsBefore,
         groupId: event.groupId,
       );
-      emit(EventsLoaded(events));
+      if (fetch == _latestFetch) emit(EventsLoaded(events));
     } catch (e) {
-      emit(EventsError(e.toString()));
+      if (fetch == _latestFetch) emit(EventsError(e.toString()));
     }
   }
 

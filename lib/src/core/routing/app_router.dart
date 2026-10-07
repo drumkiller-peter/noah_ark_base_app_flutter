@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:noah_ark_base_app_flutter/src/core/routing/app_routes.dart';
 import 'package:noah_ark_base_app_flutter/src/core/routing/main_shell.dart';
 import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/screens/login_screen.dart';
 import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/screens/register_screen.dart';
@@ -24,7 +25,7 @@ final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(
 GoRouter createAppRouter() {
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
-    initialLocation: '/devotional',
+    initialLocation: AppRoutes.devotional,
     routes: [
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
@@ -34,7 +35,7 @@ GoRouter createAppRouter() {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/devotional',
+                path: AppRoutes.devotional,
                 builder: (context, state) => const HomeScreen(),
               ),
             ],
@@ -42,7 +43,7 @@ GoRouter createAppRouter() {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/hymns',
+                path: AppRoutes.hymns,
                 builder: (context, state) => const HymnsScreen(),
               ),
             ],
@@ -50,7 +51,7 @@ GoRouter createAppRouter() {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/events',
+                path: AppRoutes.events,
                 builder: (context, state) => const EventsScreen(),
               ),
             ],
@@ -58,7 +59,7 @@ GoRouter createAppRouter() {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/prayer',
+                path: AppRoutes.prayer,
                 builder: (context, state) => const PrayerScreen(),
               ),
             ],
@@ -66,7 +67,7 @@ GoRouter createAppRouter() {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/giving',
+                path: AppRoutes.giving,
                 builder: (context, state) => const GivingScreen(),
               ),
             ],
@@ -75,22 +76,22 @@ GoRouter createAppRouter() {
       ),
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,
-        path: '/bulletins',
+        path: AppRoutes.bulletins,
         builder: (context, state) => const BulletinsScreen(),
       ),
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,
-        path: '/sermons',
+        path: AppRoutes.sermons,
         builder: (context, state) => const SermonsScreen(),
       ),
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,
-        path: '/groups',
+        path: AppRoutes.groups,
         builder: (context, state) => const GroupsScreen(),
       ),
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,
-        path: '/groups/:id',
+        path: AppRoutes.groupDetailsPattern,
         builder: (context, state) {
           final extra = state.extra;
           final idStr = state.pathParameters['id'];
@@ -116,27 +117,27 @@ GoRouter createAppRouter() {
       ),
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,
-        path: '/auth/login',
+        path: AppRoutes.login,
         builder: (context, state) => const LoginScreen(),
       ),
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,
-        path: '/auth/register',
+        path: AppRoutes.register,
         builder: (context, state) => const RegisterScreen(),
       ),
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,
-        path: '/admin',
+        path: AppRoutes.admin,
         builder: (context, state) => const ChurchWorkspaceScreen(),
       ),
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,
-        path: '/workspace',
+        path: AppRoutes.workspace,
         builder: (context, state) => const ChurchWorkspaceScreen(),
       ),
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,
-        path: '/watch/glance',
+        path: AppRoutes.watchGlance,
         builder: (context, state) => const WatchGlanceScreen(),
       ),
     ],

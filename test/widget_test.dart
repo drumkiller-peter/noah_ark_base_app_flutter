@@ -1,43 +1,53 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:noah_ark_base_app_flutter/src/core/config/app_config.dart';
+import 'package:noah_ark_base_app_flutter/src/core/localization/bilingual_text.dart';
 import 'package:noah_ark_base_app_flutter/src/core/theme/app_theme.dart';
 import 'package:noah_ark_base_app_flutter/src/core/theme/church_colors.dart';
-import 'package:noah_ark_base_app_flutter/src/core/localization/bilingual_text.dart';
 import 'package:noah_ark_base_app_flutter/src/features/auth/domain/user.dart';
+import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/screens/login_screen.dart';
+import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/screens/register_screen.dart';
 import 'package:noah_ark_base_app_flutter/src/features/bulletins/domain/bulletin.dart';
 import 'package:noah_ark_base_app_flutter/src/features/devotional/domain/daily_quote.dart';
+import 'package:noah_ark_base_app_flutter/src/features/devotional/presentation/bloc/devotional_bloc.dart';
+import 'package:noah_ark_base_app_flutter/src/features/devotional/presentation/screens/home_screen.dart';
 import 'package:noah_ark_base_app_flutter/src/features/events/domain/event.dart';
 import 'package:noah_ark_base_app_flutter/src/features/giving/domain/fund.dart';
 import 'package:noah_ark_base_app_flutter/src/features/groups/domain/group.dart';
 import 'package:noah_ark_base_app_flutter/src/features/hymns/domain/hymn.dart';
 import 'package:noah_ark_base_app_flutter/src/features/prayer/domain/prayer_request.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:noah_ark_base_app_flutter/src/features/devotional/presentation/bloc/devotional_bloc.dart';
-import 'package:noah_ark_base_app_flutter/src/features/devotional/presentation/screens/home_screen.dart';
-import 'package:noah_ark_base_app_flutter/src/features/sermons/presentation/bloc/sermons_bloc.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:noah_ark_base_app_flutter/src/features/sermons/domain/sermon.dart';
-import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/screens/login_screen.dart';
-import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/screens/register_screen.dart';
 import 'package:noah_ark_base_app_flutter/src/features/prayer/presentation/bloc/prayer_bloc.dart';
 import 'package:noah_ark_base_app_flutter/src/features/prayer/presentation/screens/prayer_screen.dart';
+import 'package:noah_ark_base_app_flutter/src/features/sermons/domain/sermon.dart';
+import 'package:noah_ark_base_app_flutter/src/features/sermons/presentation/bloc/sermons_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  setUpAll(() {
+  setUpAll(() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    SharedPreferences.setMockInitialValues({});
+    await EasyLocalization.ensureInitialized();
     GoogleFonts.config.allowRuntimeFetching = false;
+    EasyLocalization.logger.enableLevels = [];
   });
 
   group('Core Domain Smoke Tests', () {
     test('AppConfig resolves default tenant key', () {
-      final config = AppConfig.initialize();
+      final config = AppConfig.resolve();
       expect(config.tenantKey, equals('noah-ark'));
       expect(config.churchName, isNotEmpty);
     });
 
     test('BilingualText resolves according to locale fallback', () {
-      const text = BilingualText(en: 'Praise the Lord', ne: 'प्रभुको स्तुति होस्');
+      const text = BilingualText(
+        en: 'Praise the Lord',
+        ne: 'प्रभुको स्तुति होस्',
+      );
       expect(text.resolve(const Locale('en')), equals('Praise the Lord'));
       expect(text.resolve(const Locale('ne')), equals('प्रभुको स्तुति होस्'));
     });
@@ -181,8 +191,14 @@ void main() {
         'description': 'Exposition of Matthew 5',
       });
 
-      expect(sermon.youtubeUrl, equals('https://www.youtube.com/watch?v=dQw4w9WgXcQ'));
-      expect(sermon.thumbnailUrl, equals('https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg'));
+      expect(
+        sermon.youtubeUrl,
+        equals('https://www.youtube.com/watch?v=dQw4w9WgXcQ'),
+      );
+      expect(
+        sermon.thumbnailUrl,
+        equals('https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg'),
+      );
       expect(sermon.preacher, equals('Rev. Ramesh Tamang'));
     });
 
@@ -235,31 +251,42 @@ void main() {
     });
 
     test('AppTheme modern sanctuary design tokens and geometry', () {
-      final themeData = AppTheme.light(const ChurchTheme(
-        light: ChurchColors.defaultLight,
-        dark: ChurchColors.defaultDark,
-      ));
+      final themeData = AppTheme.light(
+        const ChurchTheme(
+          light: ChurchColors.defaultLight,
+          dark: ChurchColors.defaultDark,
+        ),
+      );
 
       expect(themeData.useMaterial3, isTrue);
       expect(themeData.cardTheme.shape, isA<RoundedRectangleBorder>());
       final cardShape = themeData.cardTheme.shape as RoundedRectangleBorder;
       expect((cardShape.borderRadius as BorderRadius).topLeft.x, equals(16.0));
       expect(themeData.navigationBarTheme.indicatorColor, isNotNull);
-      expect(themeData.textTheme.titleLarge?.fontWeight, equals(FontWeight.w700));
+      expect(
+        themeData.textTheme.titleLarge?.fontWeight,
+        equals(FontWeight.w700),
+      );
     });
 
-    test('DailyQuote fallback provides inspirational scripture on empty state', () {
-      expect(DailyQuote.fallback.content, contains('Do not be anxious'));
-      expect(DailyQuote.fallback.authorName, equals('Philippians 4:6-7'));
-      expect(DailyQuote.fallback.id, equals(0));
-    });
+    test(
+      'DailyQuote fallback provides inspirational scripture on empty state',
+      () {
+        expect(DailyQuote.fallback.content, contains('Do not be anxious'));
+        expect(DailyQuote.fallback.authorName, equals('Philippians 4:6-7'));
+        expect(DailyQuote.fallback.id, equals(0));
+      },
+    );
 
-    test('Sermon fallback provides inspirational featured sermon on empty state', () {
-      expect(Sermon.fallback.title, contains('The Sermon on the Mount'));
-      expect(Sermon.fallback.preacher, equals('Rev. Ramesh Tamang'));
-      expect(Sermon.fallback.youtubeVideoId, equals('dQw4w9WgXcQ'));
-      expect(Sermon.fallback.thumbnailUrl, contains('hqdefault.jpg'));
-    });
+    test(
+      'Sermon fallback provides inspirational featured sermon on empty state',
+      () {
+        expect(Sermon.fallback.title, contains('The Sermon on the Mount'));
+        expect(Sermon.fallback.preacher, equals('Rev. Ramesh Tamang'));
+        expect(Sermon.fallback.youtubeVideoId, equals('dQw4w9WgXcQ'));
+        expect(Sermon.fallback.thumbnailUrl, contains('hqdefault.jpg'));
+      },
+    );
   });
 
   group('Home Feed Modern Sanctuary UI Tests', () {
@@ -275,23 +302,56 @@ void main() {
       DevotionalBloc? devotionalBloc,
       SermonsBloc? sermonsBloc,
     }) {
-      final appConfig = AppConfig.initialize();
-      return RepositoryProvider<AppConfig>.value(
-        value: appConfig,
-        child: MultiBlocProvider(
-          providers: [
-            BlocProvider<AuthBloc>.value(value: authBloc ?? TestAuthBloc()),
-            BlocProvider<DevotionalBloc>.value(value: devotionalBloc ?? TestDevotionalBloc()),
-            BlocProvider<SermonsBloc>.value(value: sermonsBloc ?? TestSermonsBloc()),
-          ],
-          child: MaterialApp(
-            theme: AppTheme.light(churchTheme),
-            darkTheme: AppTheme.dark(churchTheme),
-            themeMode: themeMode,
-            home: const HomeScreen(),
+      final appConfig = AppConfig.resolve();
+      return EasyLocalization(
+        key: UniqueKey(),
+        supportedLocales: const [Locale('en', 'US'), Locale('ne', 'NP')],
+        path: 'assets/translations',
+        fallbackLocale: const Locale('en', 'US'),
+        startLocale: const Locale('en', 'US'),
+        child: RepositoryProvider<AppConfig>.value(
+          value: appConfig,
+          child: MultiBlocProvider(
+            providers: [
+              BlocProvider<AuthBloc>.value(value: authBloc ?? TestAuthBloc()),
+              BlocProvider<DevotionalBloc>.value(
+                value: devotionalBloc ?? TestDevotionalBloc(),
+              ),
+              BlocProvider<SermonsBloc>.value(
+                value: sermonsBloc ?? TestSermonsBloc(),
+              ),
+            ],
+            child: Builder(
+              builder: (context) {
+                return MaterialApp(
+                  theme: AppTheme.light(churchTheme),
+                  darkTheme: AppTheme.dark(churchTheme),
+                  themeMode: themeMode,
+                  locale: context.locale,
+                  supportedLocales: context.supportedLocales,
+                  localizationsDelegates: [
+                    ...context.localizationDelegates,
+                    GlobalMaterialLocalizations.delegate,
+                    GlobalWidgetsLocalizations.delegate,
+                    GlobalCupertinoLocalizations.delegate,
+                  ],
+                  home: const HomeScreen(),
+                );
+              },
+            ),
           ),
         ),
       );
+    }
+
+    /// Pumps [harness] and lets EasyLocalization load its translations,
+    /// which reads assets with real I/O the fake test clock doesn't wait for.
+    Future<void> pumpHarness(WidgetTester tester, Widget harness) async {
+      await tester.runAsync(() async {
+        await tester.pumpWidget(harness);
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+      });
+      await tester.pumpAndSettle();
     }
 
     testWidgets('Home Feed renders completely in Light Theme', (tester) async {
@@ -302,10 +362,10 @@ void main() {
         tester.view.resetDevicePixelRatio();
       });
 
-      await tester.pumpWidget(createHarness(
-        churchTheme: defaultTheme,
-        themeMode: ThemeMode.light,
-      ));
+      await pumpHarness(
+        tester,
+        createHarness(churchTheme: defaultTheme, themeMode: ThemeMode.light),
+      );
       await tester.pumpAndSettle();
 
       // 1. App Bar Header & Greeting
@@ -322,7 +382,10 @@ void main() {
       expect(find.text('Sunday Bulletin'), findsOneWidget);
       expect(find.text('Watch Sermons'), findsOneWidget);
       expect(find.text('Small Groups'), findsOneWidget);
-      expect(find.text('Church Workspace', skipOffstage: false), findsOneWidget);
+      expect(
+        find.text('Church Workspace', skipOffstage: false),
+        findsOneWidget,
+      );
 
       // 4. Weekday Calendar Strip
       expect(find.text('SUN'), findsOneWidget);
@@ -361,10 +424,10 @@ void main() {
         tester.view.resetDevicePixelRatio();
       });
 
-      await tester.pumpWidget(createHarness(
-        churchTheme: defaultTheme,
-        themeMode: ThemeMode.dark,
-      ));
+      await pumpHarness(
+        tester,
+        createHarness(churchTheme: defaultTheme, themeMode: ThemeMode.dark),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('Welcome to Fellowship'), findsOneWidget);
@@ -377,7 +440,9 @@ void main() {
       expect(find.text('FEATURED SERMON'), findsOneWidget);
     });
 
-    testWidgets('Tapping weekday date strip pill triggers selection', (tester) async {
+    testWidgets('Tapping weekday date strip pill triggers selection', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(1200, 3000);
       tester.view.devicePixelRatio = 2.0;
       addTearDown(() {
@@ -385,10 +450,10 @@ void main() {
         tester.view.resetDevicePixelRatio();
       });
 
-      await tester.pumpWidget(createHarness(
-        churchTheme: defaultTheme,
-        themeMode: ThemeMode.light,
-      ));
+      await pumpHarness(
+        tester,
+        createHarness(churchTheme: defaultTheme, themeMode: ThemeMode.light),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('MON'), findsOneWidget);
@@ -396,39 +461,56 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('Home Feed greets authenticated member with personalized greeting and role badge', (tester) async {
-      tester.view.physicalSize = const Size(1080, 2400);
-      tester.view.devicePixelRatio = 2.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
+    testWidgets(
+      'Home Feed greets authenticated member with personalized greeting and role badge',
+      (tester) async {
+        tester.view.physicalSize = const Size(1080, 2400);
+        tester.view.devicePixelRatio = 2.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
 
-      const user = User(
-        id: 42,
-        email: 'pastor@church.org',
-        fullName: 'Barnabas Paul',
-        role: UserRole.pastor,
-        tenantId: 1,
-      );
+        final user = User(
+          id: 42,
+          email: 'pastor@church.org',
+          fullName: 'Barnabas Paul',
+          role: UserRole.pastor,
+          tenantId: 1,
+          languagePreference: '',
+          privacySettings: const PrivacySettings(
+            showEmail: true,
+            showPhone: true,
+            showInDirectory: true,
+            giveAnonymously: false,
+          ),
+          isActive: true,
+          createdAt: DateTime.now(),
+        );
 
-      final authBloc = TestAuthBloc(const Authenticated(user));
+        final authBloc = TestAuthBloc(Authenticated(user));
 
-      await tester.pumpWidget(createHarness(
-        churchTheme: defaultTheme,
-        themeMode: ThemeMode.light,
-        authBloc: authBloc,
-      ));
-      await tester.pumpAndSettle();
+        await pumpHarness(
+          tester,
+          createHarness(
+            churchTheme: defaultTheme,
+            themeMode: ThemeMode.light,
+            authBloc: authBloc,
+          ),
+        );
+        await tester.pumpAndSettle();
 
-      // Check personalized greeting containing first name
-      expect(find.textContaining('Barnabas'), findsOneWidget);
-      // Check leadership role chip
-      expect(find.text('PASTOR'), findsWidgets);
-    });
+        // Check personalized greeting containing first name
+        expect(find.textContaining('Barnabas'), findsOneWidget);
+        // Check leadership role chip
+        expect(find.text('PASTOR'), findsWidgets);
+      },
+    );
 
-    testWidgets('LoginScreen renders sanctuary hero header and form inputs', (tester) async {
-      final appConfig = AppConfig.initialize();
+    testWidgets('LoginScreen renders sanctuary hero header and form inputs', (
+      tester,
+    ) async {
+      final appConfig = AppConfig.resolve();
       await tester.pumpWidget(
         RepositoryProvider<AppConfig>.value(
           value: appConfig,
@@ -444,81 +526,94 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Noah Ark Fellowship'), findsOneWidget);
-      expect(find.text('Your church community, always within reach'), findsOneWidget);
+      expect(
+        find.text('Your church community, always within reach'),
+        findsOneWidget,
+      );
       expect(find.text('Welcome'), findsOneWidget);
       expect(find.text('Sign in to continue to your church'), findsOneWidget);
       expect(find.text('Sign In'), findsOneWidget);
       expect(find.text('Create account'), findsOneWidget);
     });
 
-    testWidgets('RegisterScreen renders sanctuary hero header and registration inputs', (tester) async {
-      final appConfig = AppConfig.initialize();
-      await tester.pumpWidget(
-        RepositoryProvider<AppConfig>.value(
-          value: appConfig,
-          child: BlocProvider<AuthBloc>.value(
-            value: TestAuthBloc(),
-            child: MaterialApp(
-              theme: AppTheme.light(defaultTheme),
-              home: const RegisterScreen(),
+    testWidgets(
+      'RegisterScreen renders sanctuary hero header and registration inputs',
+      (tester) async {
+        final appConfig = AppConfig.resolve();
+        await tester.pumpWidget(
+          RepositoryProvider<AppConfig>.value(
+            value: appConfig,
+            child: BlocProvider<AuthBloc>.value(
+              value: TestAuthBloc(),
+              child: MaterialApp(
+                theme: AppTheme.light(defaultTheme),
+                home: const RegisterScreen(),
+              ),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.text('Noah Ark Fellowship'), findsOneWidget);
-      expect(find.text('Connect with our church family'), findsOneWidget);
-      expect(find.text('Join Congregation'), findsOneWidget);
-      expect(find.text('Create Account'), findsOneWidget);
-      expect(find.text('Sign in'), findsOneWidget);
-    });
+        expect(find.text('Noah Ark Fellowship'), findsOneWidget);
+        expect(find.text('Connect with our church family'), findsOneWidget);
+        expect(find.text('Join Congregation'), findsOneWidget);
+        expect(find.text('Create Account'), findsOneWidget);
+        expect(find.text('Sign in'), findsOneWidget);
+      },
+    );
 
-    testWidgets('PrayerScreen renders sanctuary header and prayer chain testimonies', (tester) async {
-      tester.view.physicalSize = const Size(1200, 3000);
-      tester.view.devicePixelRatio = 2.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
+    testWidgets(
+      'PrayerScreen renders sanctuary header and prayer chain testimonies',
+      (tester) async {
+        tester.view.physicalSize = const Size(1200, 3000);
+        tester.view.devicePixelRatio = 2.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
 
-      final samplePrayer = PrayerRequest(
-        id: 1,
-        title: 'Healing and Peace in Family',
-        content: 'Praying for my mother who is recovering from surgery. God has been so faithful!',
-        authorName: 'Grace Williams',
-        createdAt: DateTime(2026, 10, 4),
-        intercessionCount: 87,
-        hasInterceded: false,
-      );
+        final samplePrayer = PrayerRequest(
+          id: 1,
+          title: 'Healing and Peace in Family',
+          content: 'Praying for my mother who is recovering from surgery. God has been so faithful!',
+          authorName: 'Grace Williams',
+          createdAt: DateTime(2026, 10, 4),
+          intercessionCount: 87,
+          hasInterceded: false,
+        );
 
-      final prayerBloc = TestPrayerBloc(PrayerLoaded(
-        publicPrayers: [samplePrayer],
-        privatePrayers: const [],
-      ));
+        final prayerBloc = TestPrayerBloc(
+          PrayerLoaded(publicPrayers: [samplePrayer], privatePrayers: const []),
+        );
 
-      await tester.pumpWidget(
-        MultiBlocProvider(
-          providers: [
-            BlocProvider<AuthBloc>.value(value: TestAuthBloc()),
-            BlocProvider<PrayerBloc>.value(value: prayerBloc),
-          ],
-          child: MaterialApp(
-            theme: AppTheme.light(defaultTheme),
-            home: const PrayerScreen(),
+        await tester.pumpWidget(
+          MultiBlocProvider(
+            providers: [
+              BlocProvider<AuthBloc>.value(value: TestAuthBloc()),
+              BlocProvider<PrayerBloc>.value(value: prayerBloc),
+            ],
+            child: MaterialApp(
+              theme: AppTheme.light(defaultTheme),
+              home: const PrayerScreen(),
+            ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.text('Testimonies & Prayer'), findsOneWidget);
-      expect(find.text('Ask for Prayer'), findsOneWidget);
-      expect(find.text('Grace Williams'), findsOneWidget);
-      expect(find.text('G'), findsOneWidget);
-      expect(find.text('Healing and Peace in Family'), findsOneWidget);
-      expect(find.text('“Praying for my mother who is recovering from surgery. God has been so faithful!”'), findsOneWidget);
-      expect(find.text('Intercede (87)'), findsOneWidget);
-    });
+        expect(find.text('Testimonies & Prayer'), findsOneWidget);
+        expect(find.text('Ask for Prayer'), findsOneWidget);
+        expect(find.text('Grace Williams'), findsOneWidget);
+        expect(find.text('G'), findsOneWidget);
+        expect(find.text('Healing and Peace in Family'), findsOneWidget);
+        expect(
+          find.text(
+            '“Praying for my mother who is recovering from surgery. God has been so faithful!”',
+          ),
+          findsOneWidget,
+        );
+        expect(find.text('Intercede (87)'), findsOneWidget);
+      },
+    );
   });
 }
 
@@ -528,19 +623,22 @@ class TestAuthBloc extends Bloc<AuthEvent, AuthState> implements AuthBloc {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
-class TestDevotionalBloc extends Bloc<DevotionalEvent, DevotionalState> implements DevotionalBloc {
-  TestDevotionalBloc([super.initialState = const DevotionalInitial()]);
+class TestDevotionalBloc extends Bloc<DevotionalEvent, DevotionalState>
+    implements DevotionalBloc {
+  TestDevotionalBloc([super.initialState = const DevotionalState()]);
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
-class TestSermonsBloc extends Bloc<SermonsEvent, SermonsState> implements SermonsBloc {
+class TestSermonsBloc extends Bloc<SermonsEvent, SermonsState>
+    implements SermonsBloc {
   TestSermonsBloc([super.initialState = const SermonsInitial()]);
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
-class TestPrayerBloc extends Bloc<PrayerEvent, PrayerState> implements PrayerBloc {
+class TestPrayerBloc extends Bloc<PrayerEvent, PrayerState>
+    implements PrayerBloc {
   TestPrayerBloc([super.initialState = const PrayerInitial()]);
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

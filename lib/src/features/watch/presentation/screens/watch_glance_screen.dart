@@ -15,10 +15,7 @@ class WatchGlanceScreen extends StatelessWidget {
       body: SafeArea(
         child: PageView(
           scrollDirection: Axis.vertical,
-          children: const [
-            _WatchDevotionalPage(),
-            _WatchNextEventPage(),
-          ],
+          children: const [_WatchDevotionalPage(), _WatchNextEventPage()],
         ),
       ),
     );
@@ -32,14 +29,22 @@ class _WatchDevotionalPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<DevotionalBloc, DevotionalState>(
       builder: (context, state) {
-        if (state is DevotionalLoaded && state.quotes.isNotEmpty) {
-          final quote = state.quotes.first;
+        if (state.status == DevotionalStatus.loaded &&
+            state.quotes?.isNotEmpty == true) {
+          final quote = state.quotes!.first;
           return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 8.0,
+            ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.menu_book_rounded, color: context.churchColors.warning, size: 20),
+                Icon(
+                  Icons.menu_book_rounded,
+                  color: context.churchColors.warning,
+                  size: 20,
+                ),
                 const SizedBox(height: 6),
                 Text(
                   quote.content,
@@ -68,7 +73,10 @@ class _WatchDevotionalPage extends StatelessWidget {
           );
         }
         return Center(
-          child: CircularProgressIndicator(color: context.churchColors.warning, strokeWidth: 2),
+          child: CircularProgressIndicator(
+            color: context.churchColors.warning,
+            strokeWidth: 2,
+          ),
         );
       },
     );
@@ -89,7 +97,11 @@ class _WatchNextEventPage extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.event_available_rounded, color: context.churchColors.info, size: 20),
+                Icon(
+                  Icons.event_available_rounded,
+                  color: context.churchColors.info,
+                  size: 20,
+                ),
                 const SizedBox(height: 6),
                 Text(
                   nextEvent.title,
@@ -116,7 +128,10 @@ class _WatchNextEventPage extends StatelessWidget {
                     nextEvent.location!,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: context.churchColors.textMuted, fontSize: 10),
+                    style: TextStyle(
+                      color: context.churchColors.textMuted,
+                      fontSize: 10,
+                    ),
                   ),
               ],
             ),
@@ -125,7 +140,10 @@ class _WatchNextEventPage extends StatelessWidget {
         return Center(
           child: Text(
             'No upcoming events',
-            style: TextStyle(color: context.churchColors.textMuted, fontSize: 11),
+            style: TextStyle(
+              color: context.churchColors.textMuted,
+              fontSize: 11,
+            ),
           ),
         );
       },

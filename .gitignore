@@ -49,10 +49,11 @@ app.*.map.json
 
 # FVM Version Cache
 .fvm/
-# Local build settings, including the app's API client secret (copy dart_defines.example.json)
-dart_defines.json
-churches/*/dart_defines.json
+# Local build settings, including the app's API client secret (copy .env.example),
+# and the code generated from them
 .env
+churches/*/.env
+lib/src/core/config/env.g.dart
 build/
 .scratch/
 .vscode/

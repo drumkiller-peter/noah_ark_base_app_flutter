@@ -1,0 +1,10 @@
+targets:
+  $default:
+    # The defaults plus .env, so editing .env regenerates lib/src/core/config/env.g.dart.
+    sources:
+      - $package$
+      - lib/$lib$
+      - lib/**
+      - test/**
+      - pubspec.yaml
+      - .env

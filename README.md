@@ -23,7 +23,7 @@ created, that's why.
 
 | Feature | Backend calls | State |
 |---|---|---|
-| Sign in, register | `/auth/login`, `/auth/member/register`, `/auth/me`, `/auth/logout` | **Works**; sanctuary brand hero header, curved bottom surface card, Newsreader greeting, and responsive member registration |
+| Sign in, register, stay signed in | `/auth/login`, `/auth/member/register`, `/auth/me`, `/auth/refresh`, `/auth/logout` | **Works**; an expired access token is refreshed quietly (see [Tokens](#how-a-churchs-app-works)); sanctuary brand hero header, curved bottom surface card, Newsreader greeting, and responsive member registration |
 | Theme (church colors) | `GET /theme` | **Works** — see [Theme](#theme) |
 | Home (sanctuary feed) | `GET /daily-quotes`, `GET /sermons` | **Works**; features warm Newsreader/Inter typography pairing, Sunday Worship Spotlight (10:00 AM), slim action pills (`/bulletins`, `/sermons`, `/groups`, `/admin`), interactive 7-day Weekday Date Strip, 3-Card Devotional layout (Today's Scripture with Philippians 4:6-7 fallback, Pastoral Reflection, Prayer for Today), Fellowship Highlights (`/prayer`, `/events`), and Featured Sermon spotlight with YouTube playback |
 | Sermons | `GET /sermons` | **Works**; sanctuary media archive with search, preacher filter chips, 16:9 video preview cards, and bottom sheet sermon notes |
@@ -55,29 +55,30 @@ The secret is printed once — copy both values. A secret inside a mobile app is
 not really secret (anyone can pull it from the bundle); the backend treats it
 as an app identity it can throttle and rotate, not as access control.
 
-**2. Put your settings in a local file.**
+**2. Put your settings in `.env` and generate them into the app.**
 
 ```bash
-cp dart_defines.example.json dart_defines.json   # git-ignored; fill in CLIENT_ID and CLIENT_SECRET
+cp .env.example .env              # git-ignored; fill in CLIENT_ID and CLIENT_SECRET
+dart run build_runner build -d    # writes lib/src/core/config/env.g.dart (git-ignored)
 ```
+
+Run `build_runner` again after every edit to `.env`; until you do, the app
+keeps the old values. `--dart-define` no longer changes any setting.
 
 **3. Run.**
 
 ```bash
-flutter run -d chrome --dart-define-from-file=dart_defines.json
-flutter run -d macos --dart-define-from-file=dart_defines.json
-flutter run -d "iPhone 18 Pro" --dart-define-from-file=dart_defines.json
+flutter run -d chrome
+flutter run -d macos
+flutter run -d "iPhone 18 Pro"
 ```
-
-The VS Code launch configurations in [`.vscode/launch.json`](.vscode/launch.json)
-don't pass client credentials yet; add
-`"--dart-define-from-file=dart_defines.json"` to a configuration's `args` to
-use them there.
 
 ### Settings
 
-Every setting is fixed when the app is built, with `--dart-define` or the
-`dart_defines.json` file.
+Every setting is fixed when the app is built: [envied](https://pub.dev/packages/envied)
+reads `.env` during `build_runner` and generates `Env` in
+`lib/src/core/config/env.g.dart`, with `CLIENT_ID` and `CLIENT_SECRET`
+obfuscated. A missing key, or a missing `.env`, takes the default below.
 
 | Key | What it is | Default |
 |---|---|---|
@@ -114,9 +115,20 @@ Every setting is fixed when the app is built, with `--dart-define` or the
 **Tokens** ([`auth_interceptor.dart`](lib/src/core/network/auth_interceptor.dart)):
 every request carries the church's `X-Tenant-Key` and the signed-in member's
 token, or the guest token when nobody is signed in. On a `401` the app tries,
-in turn: refreshing the member's session, then trading the client credentials
-for a new guest token. Then it replays the request once. Tokens live in the
-platform keychain/keystore (`flutter_secure_storage`).
+in turn: refreshing the member's session (`POST /auth/refresh`), then trading
+the client credentials for a new guest token. Then it replays the request once.
+A burst of `401`s spends the refresh token once; requests that failed with the
+old token retry with the new one. Only the backend rejecting the refresh token
+signs the member out (and `AuthBloc` follows); being offline or a server error
+keeps the session. A `401` from sign-in, registration or the token routes
+themselves is never retried. Tokens live in the platform keychain/keystore
+(`flutter_secure_storage`).
+
+**Whose data** ([`member_session_scope.dart`](lib/src/features/auth/presentation/widgets/member_session_scope.dart)):
+the blocs holding a member's own data (prayer, giving, Groups, Events with
+their RSVPs) are replaced with fresh ones and reloaded whenever a different
+member, or nobody, is signed in, so a shared phone never shows the last
+member's Private Prayer Requests or giving.
 
 **Navigation** ([`app_router.dart`](lib/src/core/routing/app_router.dart)):
 five tabs (Home, Hymns, Events, Prayer, Giving) — a bottom bar on phones, a
@@ -132,8 +144,8 @@ Each church gets its own Member App: its own name, icon, store listing and App K
 
 1. **Create the church in the backend.** Not built: backend ticket `churches/01` adds `python -m scripts.provision_church create`. It makes the church, its first Pastor and the app's API client, and prints the client ID and secret once. Keep them in the password manager. Until then, `POST /auth/register` makes the church and its first Pastor, and `scripts.generate_api_client create --tenant-key <app-key>` makes the client.
 2. **Set its colors and logo.** Colors work today: as a Super Admin, `PUT /theme?tenant_id=<id>`. Logo upload is backend ticket `theme/07`.
-3. **Add its folder here.** Not built: ticket `member-apps/01` adds `tool/new_church.sh <app-key>`, which creates `churches/<app-key>/`. Fill in `church.json`, add the logo, and put the client ID and secret in its git-ignored `dart_defines.json`.
-4. **Build.** Not built: tickets `member-apps/01` and `member-apps/02` add `tool/build_member_app.sh <app-key> <ios|android>`. It applies the bundle ID (`com.noaharksolutions.<app-key>`), name, icon and splash screen, then builds. Build from a clean checkout. Until then, `flutter run --dart-define-from-file=dart_defines.json` runs one church at a time with the shared `com.example` IDs.
+3. **Add its folder here.** Not built: ticket `member-apps/01` adds `tool/new_church.sh <app-key>`, which creates `churches/<app-key>/`. Fill in `church.json`, add the logo, and put the client ID and secret in its git-ignored `.env`.
+4. **Build.** Not built: tickets `member-apps/01` and `member-apps/02` add `tool/build_member_app.sh <app-key> <ios|android>`. It applies the bundle ID (`com.noaharksolutions.<app-key>`), name, icon and splash screen, then builds. Build from a clean checkout. Until then, set the church in `.env`, run `dart run build_runner build -d`, then `flutter run`; that runs one church at a time with the shared `com.example` IDs.
 5. **Submit to the stores** under the church's own Apple and Google accounts, with its privacy policy URL (backend ticket `stores/01`). Every church ships the same version at the same time.
 
 The web app is one build for every church, chosen by subdomain (`<app-key>.localhost` during development): ticket `web/01`.
@@ -224,6 +236,8 @@ Beyond the feature table above:
   device would share it.
 - No route guards: the Workspace is reachable by URL, and only the screen
   checks the role.
+- Launching offline shows a signed-in member as a guest: the app keeps their
+  tokens but has no cached profile to show until `/auth/me` answers.
 
 ---
 

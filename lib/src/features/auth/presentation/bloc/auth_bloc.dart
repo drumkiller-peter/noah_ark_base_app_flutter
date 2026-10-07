@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:noah_ark_base_app_flutter/src/features/auth/data/auth_repository.dart';
@@ -5,16 +7,28 @@ import 'package:noah_ark_base_app_flutter/src/features/auth/domain/user.dart';
 
 part 'auth_event.dart';
 part 'auth_state.dart';
+
 // BLoC
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository authRepository;
+  late final StreamSubscription<void> _sessionExpiredSubscription;
 
-  AuthBloc({required this.authRepository})
-      : super(const AuthInitial()) {
+  AuthBloc({required this.authRepository}) : super(const AuthInitial()) {
     on<AuthCheckRequested>(_onCheckRequested);
     on<AuthLoginSubmitted>(_onLoginSubmitted);
     on<AuthRegisterSubmitted>(_onRegisterSubmitted);
     on<AuthLogoutRequested>(_onLogoutRequested);
+    on<AuthSessionExpired>(_onSessionExpired);
+
+    _sessionExpiredSubscription = authRepository.sessionExpired.listen(
+      (_) => add(const AuthSessionExpired()),
+    );
+  }
+
+  @override
+  Future<void> close() async {
+    await _sessionExpiredSubscription.cancel();
+    return super.close();
   }
 
   Future<void> _onCheckRequested(
@@ -76,6 +90,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     emit(const AuthLoading());
     await authRepository.logout();
+    emit(const UnauthenticatedGuest());
+  }
+
+  /// The tokens are already cleared and the app is back on the guest token;
+  /// this only brings the UI along.
+  void _onSessionExpired(AuthSessionExpired event, Emitter<AuthState> emit) {
     emit(const UnauthenticatedGuest());
   }
 }

@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:noah_ark_base_app_flutter/src/core/theme/app_theme.dart';
 import 'package:noah_ark_base_app_flutter/src/core/theme/church_colors.dart';
 import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/widgets/member_session_scope.dart';
 import 'package:noah_ark_base_app_flutter/src/features/events/domain/event.dart';
 import 'package:noah_ark_base_app_flutter/src/features/events/presentation/bloc/events_bloc.dart';
 
@@ -25,11 +26,18 @@ class EventsScreen extends StatefulWidget {
 
 class _EventsScreenState extends State<EventsScreen> {
   EventTimeFilter _selectedFilter = EventTimeFilter.upcoming;
+  int? _sessionGeneration;
 
   @override
-  void initState() {
-    super.initState();
-    _triggerFilterFetch(_selectedFilter);
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // On first build, and again whenever someone else signs in: the new
+    // member's RSVPs, under this screen's filter.
+    final generation = MemberSessionScope.generationOf(context);
+    if (generation != _sessionGeneration) {
+      _sessionGeneration = generation;
+      _triggerFilterFetch(_selectedFilter);
+    }
   }
 
   void _triggerFilterFetch(EventTimeFilter filter) {

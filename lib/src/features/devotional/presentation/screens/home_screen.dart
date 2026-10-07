@@ -3,11 +3,14 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:noah_ark_base_app_flutter/src/core/config/app_config.dart';
 import 'package:noah_ark_base_app_flutter/src/core/constants/translation_string.dart';
+import 'package:noah_ark_base_app_flutter/src/core/routing/app_routes.dart';
 import 'package:noah_ark_base_app_flutter/src/core/theme/app_theme.dart';
 import 'package:noah_ark_base_app_flutter/src/core/theme/church_colors.dart';
+import 'package:noah_ark_base_app_flutter/src/core/utils/extensions/date_time_extension.dart';
 import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/widgets/user_avatar_button.dart';
 import 'package:noah_ark_base_app_flutter/src/features/devotional/domain/daily_quote.dart';
@@ -17,6 +20,7 @@ import 'package:noah_ark_base_app_flutter/src/features/sermons/presentation/bloc
 import 'package:noah_ark_base_app_flutter/src/shared/app_icon.dart';
 import 'package:noah_ark_base_app_flutter/src/shared/app_rounded_card.dart';
 import 'package:noah_ark_base_app_flutter/src/shared/app_text.dart';
+import 'package:noah_ark_base_app_flutter/src/shared/k_app_bar.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -38,12 +42,11 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final appConfig = context.watch<AppConfig>();
-    final todayFormatted = DateFormat('EEEE, MMMM d').format(_selectedDate);
-
+    final todayFormatted = _selectedDate.toDoWMDFormat();
     return Scaffold(
-      appBar: AppBar(
+      appBar: CustomAppBar(
         titleSpacing: 16,
-        title: Row(
+        titleWidget: Row(
           children: [
             Container(
               width: 36,
@@ -88,24 +91,22 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        actions: [
+        actionsWidget: [
           IconButton(
             icon: const Icon(Icons.refresh_rounded, size: 22),
             tooltip: 'Refresh Devotional',
             onPressed: () => context.read<DevotionalBloc>().add(
-              const DevotionalFetchRequested(forceRefresh: true),
+              DevotionalFetchRequested(forceRefresh: true),
             ),
           ),
-          const Padding(
-            padding: EdgeInsets.only(right: 12.0),
-            child: UserAvatarButton(compact: true),
-          ),
+          const UserAvatarButton(compact: true),
+          const Gap(16),
         ],
       ),
       body: RefreshIndicator(
         onRefresh: () async {
           context.read<DevotionalBloc>().add(
-            const DevotionalFetchRequested(forceRefresh: true),
+            DevotionalFetchRequested(forceRefresh: true),
           );
         },
         child: ListView(
@@ -338,7 +339,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               fontWeight: FontWeight.w700,
                             ),
                           ),
-                          onPressed: () => context.push('/bulletins'),
+                          onPressed: () => context.push(AppRoutes.bulletins),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -367,7 +368,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               fontWeight: FontWeight.w700,
                             ),
                           ),
-                          onPressed: () => context.push('/sermons'),
+                          onPressed: () => context.push(AppRoutes.sermons),
                         ),
                       ),
                     ],
@@ -507,7 +508,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildDevotionalSection(BuildContext context) {
     return BlocBuilder<DevotionalBloc, DevotionalState>(
       builder: (context, state) {
-        if (state is DevotionalLoading) {
+        if (state.status == DevotionalStatus.loading) {
           return Container(
             height: 160,
             decoration: BoxDecoration(
@@ -521,7 +522,7 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         }
 
-        if (state is DevotionalError) {
+        if (state.status == DevotionalStatus.error) {
           return Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -540,7 +541,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  state.message,
+                  state.errorFetchingQuotes ?? '',
                   style: TextStyle(
                     color: context.churchColors.error,
                     fontSize: 13,
@@ -550,7 +551,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 12),
                 FilledButton.tonal(
                   onPressed: () => context.read<DevotionalBloc>().add(
-                    const DevotionalFetchRequested(forceRefresh: true),
+                    DevotionalFetchRequested(forceRefresh: true),
                   ),
                   child: const Text('Retry'),
                 ),
@@ -559,8 +560,10 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         }
 
-        final quote = (state is DevotionalLoaded && state.quotes.isNotEmpty)
-            ? state.quotes.first
+        final quote =
+            (state.status == DevotionalStatus.loaded &&
+                state.quotes!.isNotEmpty)
+            ? state.quotes!.first
             : DailyQuote.fallback;
 
         return Column(
@@ -749,7 +752,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    onPressed: () => context.push('/prayer'),
+                    onPressed: () => context.push(AppRoutes.prayer),
                   ),
                   const SizedBox(width: 8),
                   TextButton.icon(
@@ -769,7 +772,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    onPressed: () => context.push('/hymns'),
+                    onPressed: () => context.push(AppRoutes.hymns),
                   ),
                 ],
               ),
@@ -967,7 +970,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                onPressed: () => context.push('/prayer'),
+                onPressed: () => context.push(AppRoutes.prayer),
               ),
             ],
           ),
@@ -988,7 +991,7 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: Icons.auto_stories_rounded,
             label: 'Sunday Bulletin',
             color: context.churchColors.primary,
-            route: '/bulletins',
+            route: AppRoutes.bulletins,
           ),
           const SizedBox(width: 8),
           _buildActionPill(
@@ -996,7 +999,7 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: Icons.smart_display_rounded,
             label: 'Watch Sermons',
             color: context.churchColors.secondary,
-            route: '/sermons',
+            route: AppRoutes.sermons,
           ),
           const SizedBox(width: 8),
           _buildActionPill(
@@ -1004,7 +1007,7 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: Icons.groups_rounded,
             label: 'Small Groups',
             color: context.churchColors.success,
-            route: '/groups',
+            route: AppRoutes.groups,
           ),
           const SizedBox(width: 8),
           _buildActionPill(
@@ -1012,7 +1015,7 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: Icons.admin_panel_settings_rounded,
             label: 'Church Workspace',
             color: context.churchColors.info,
-            route: '/admin',
+            route: AppRoutes.admin,
           ),
         ],
       ),
@@ -1159,7 +1162,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   subtitle:
                       'Stand together in faith for church needs & healing',
                   actionLabel: 'Pray Together',
-                  route: '/prayer',
+                  route: AppRoutes.prayer,
                 ),
               ),
               const SizedBox(width: 12),
@@ -1172,7 +1175,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: 'Gatherings',
                   subtitle: 'Fellowship meals, prayer vigils, & Bible study',
                   actionLabel: 'View Schedule',
-                  route: '/events',
+                  route: AppRoutes.events,
                 ),
               ),
             ],
@@ -1371,7 +1374,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    onPressed: () => context.push('/sermons'),
+                    onPressed: () => context.push(AppRoutes.sermons),
                   ),
                 ],
               ),
@@ -1641,7 +1644,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         color: context.churchColors.text,
                       ),
                     ),
-                    onPressed: () => context.push('/sermons'),
+                    onPressed: () => context.push(AppRoutes.sermons),
                   ),
                 ],
               ),

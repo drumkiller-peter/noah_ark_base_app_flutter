@@ -1,16 +1,15 @@
 import 'package:dio/dio.dart';
-import 'package:noah_ark_base_app_flutter/src/core/network/api_client.dart';
 import 'package:noah_ark_base_app_flutter/src/core/network/api_endpoints.dart';
 import 'package:noah_ark_base_app_flutter/src/features/prayer/domain/prayer_request.dart';
 
 class PrayerRepository {
-  final ApiClient apiClient;
+  final Dio dio;
 
-  PrayerRepository({required this.apiClient});
+  PrayerRepository({required this.dio});
 
   Future<List<PrayerRequest>> getPrayerChain() async {
     try {
-      final response = await apiClient.dio.get<dynamic>(
+      final response = await dio.get<dynamic>(
         ApiEndpoints.prayerChain,
         queryParameters: {'page': 1, 'page_size': 50},
       );
@@ -35,7 +34,7 @@ class PrayerRepository {
 
   Future<List<PrayerRequest>> getMyPrivatePrayers() async {
     try {
-      final response = await apiClient.dio.get<dynamic>(
+      final response = await dio.get<dynamic>(
         ApiEndpoints.privatePrayers,
         queryParameters: {'page': 1, 'page_size': 50},
       );
@@ -68,22 +67,18 @@ class PrayerRepository {
     final Response<dynamic> response;
     if (isPrivate) {
       if (assignedPastorId == null) {
-        throw ArgumentError('assignedPastorId is required for Private Prayer Requests');
+        throw ArgumentError(
+          'assignedPastorId is required for Private Prayer Requests',
+        );
       }
-      response = await apiClient.dio.post<dynamic>(
+      response = await dio.post<dynamic>(
         ApiEndpoints.privatePrayers,
-        data: {
-          'content': content,
-          'assigned_pastor_id': assignedPastorId,
-        },
+        data: {'content': content, 'assigned_pastor_id': assignedPastorId},
       );
     } else {
-      response = await apiClient.dio.post<dynamic>(
+      response = await dio.post<dynamic>(
         ApiEndpoints.prayerChain,
-        data: {
-          'content': content,
-          'is_anonymous': isAnonymous,
-        },
+        data: {'content': content, 'is_anonymous': isAnonymous},
       );
     }
 
@@ -95,15 +90,15 @@ class PrayerRepository {
 
   Future<void> toggleIntercession(int prayerId, bool intercede) async {
     if (intercede) {
-      await apiClient.dio.post<dynamic>(ApiEndpoints.prayerIntercessions(prayerId));
+      await dio.post<dynamic>(ApiEndpoints.prayerIntercessions(prayerId));
     } else {
-      await apiClient.dio.delete<dynamic>(ApiEndpoints.prayerIntercessions(prayerId));
+      await dio.delete<dynamic>(ApiEndpoints.prayerIntercessions(prayerId));
     }
   }
 
   Future<List<PastoralPrayerNote>> getPastoralPrayers(int prayerId) async {
     try {
-      final response = await apiClient.dio.get<dynamic>(
+      final response = await dio.get<dynamic>(
         ApiEndpoints.privatePastoralPrayers(prayerId),
         queryParameters: {'page': 1, 'page_size': 50},
       );
@@ -119,7 +114,9 @@ class PrayerRepository {
       }
 
       return items
-          .map((item) => PastoralPrayerNote.fromJson(item as Map<String, dynamic>))
+          .map(
+            (item) => PastoralPrayerNote.fromJson(item as Map<String, dynamic>),
+          )
           .toList();
     } catch (_) {
       return [];

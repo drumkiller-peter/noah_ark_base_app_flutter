@@ -1,0 +1,50 @@
+import 'package:noah_ark_base_app_flutter/src/core/di/dependency_injection.dart';
+import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:noah_ark_base_app_flutter/src/features/bulletins/presentation/bloc/bulletins_bloc.dart';
+import 'package:noah_ark_base_app_flutter/src/features/devotional/presentation/bloc/devotional_bloc.dart';
+import 'package:noah_ark_base_app_flutter/src/features/events/presentation/bloc/events_bloc.dart';
+import 'package:noah_ark_base_app_flutter/src/features/giving/presentation/bloc/giving_bloc.dart';
+import 'package:noah_ark_base_app_flutter/src/features/groups/presentation/bloc/groups_bloc.dart';
+import 'package:noah_ark_base_app_flutter/src/features/hymns/presentation/bloc/hymns_bloc.dart';
+import 'package:noah_ark_base_app_flutter/src/features/prayer/presentation/bloc/prayer_bloc.dart';
+import 'package:noah_ark_base_app_flutter/src/features/sermons/presentation/bloc/sermons_bloc.dart';
+
+void initBlocs() {
+  getIt
+    ..registerLazySingleton<AuthBloc>(
+      () => AuthBloc(authRepository: getIt()),
+      dispose: (bloc) => bloc.close(),
+    )
+    ..registerLazySingleton<DevotionalBloc>(
+      () => DevotionalBloc(repository: getIt()),
+      dispose: (bloc) => bloc.close(),
+    )
+    ..registerLazySingleton<HymnsBloc>(
+      () => HymnsBloc(repository: getIt()),
+      dispose: (bloc) => bloc.close(),
+    )
+    ..registerLazySingleton<EventsBloc>(
+      () => EventsBloc(repository: getIt()),
+      dispose: (bloc) => bloc.close(),
+    )
+    ..registerLazySingleton<PrayerBloc>(
+      () => PrayerBloc(repository: getIt()),
+      dispose: (bloc) => bloc.close(),
+    )
+    ..registerLazySingleton<GivingBloc>(
+      () => GivingBloc(repository: getIt()),
+      dispose: (bloc) => bloc.close(),
+    )
+    ..registerLazySingleton<BulletinsBloc>(
+      () => BulletinsBloc(repository: getIt()),
+      dispose: (bloc) => bloc.close(),
+    )
+    ..registerLazySingleton<SermonsBloc>(
+      () => SermonsBloc(repository: getIt()),
+      dispose: (bloc) => bloc.close(),
+    )
+    ..registerLazySingleton<GroupsBloc>(
+      () => GroupsBloc(repository: getIt()),
+      dispose: (bloc) => bloc.close(),
+    );
+}

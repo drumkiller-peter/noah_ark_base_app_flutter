@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:noah_ark_base_app_flutter/src/core/routing/app_routes.dart';
 import 'package:noah_ark_base_app_flutter/src/core/theme/app_theme.dart';
 import 'package:noah_ark_base_app_flutter/src/core/theme/church_colors.dart';
 import 'package:noah_ark_base_app_flutter/src/features/auth/domain/user.dart';
@@ -160,7 +161,7 @@ class ChurchWorkspaceScreen extends StatelessWidget {
                   ),
                   icon: const Icon(Icons.add, size: 18),
                   label: const Text('Add Event'),
-                  onPressed: () => context.push('/events'),
+                  onPressed: () => context.push(AppRoutes.events),
                 ),
               ],
             ),
@@ -391,7 +392,7 @@ class ChurchWorkspaceScreen extends StatelessWidget {
                   title: const Text('Assigned Requests Queue', style: TextStyle(fontWeight: FontWeight.w600)),
                   subtitle: const Text('8 pending pastoral notes & prayers', style: TextStyle(fontSize: 12)),
                   trailing: const Icon(Icons.arrow_forward_ios, size: 14),
-                  onTap: () => context.push('/prayer'),
+                  onTap: () => context.push(AppRoutes.prayer),
                 ),
               ],
             ),
@@ -417,10 +418,10 @@ class ChurchWorkspaceScreen extends StatelessWidget {
                   style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 12),
-                _buildToolTile(context, Icons.newspaper, 'Weekly Bulletins', 'Publish service orders & alerts', '/bulletins'),
-                _buildToolTile(context, Icons.video_library, 'Sermons & Media', 'Manage YouTube catalog', '/sermons'),
-                _buildToolTile(context, Icons.group_work, 'Groups', 'Oversee group rosters', '/groups'),
-                _buildToolTile(context, Icons.menu_book, 'Bilingual Hymn Book', 'Catalogue lyrics & audio', '/hymns'),
+                _buildToolTile(context, Icons.newspaper, 'Weekly Bulletins', 'Publish service orders & alerts', AppRoutes.bulletins),
+                _buildToolTile(context, Icons.video_library, 'Sermons & Media', 'Manage YouTube catalog', AppRoutes.sermons),
+                _buildToolTile(context, Icons.group_work, 'Groups', 'Oversee group rosters', AppRoutes.groups),
+                _buildToolTile(context, Icons.menu_book, 'Bilingual Hymn Book', 'Catalogue lyrics & audio', AppRoutes.hymns),
               ],
             ),
           ),

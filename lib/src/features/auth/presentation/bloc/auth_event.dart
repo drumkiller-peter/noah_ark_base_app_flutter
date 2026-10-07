@@ -36,3 +36,8 @@ class AuthRegisterSubmitted extends AuthEvent {
 class AuthLogoutRequested extends AuthEvent {
   const AuthLogoutRequested();
 }
+
+/// The backend rejected the member's refresh token, so they are signed out.
+class AuthSessionExpired extends AuthEvent {
+  const AuthSessionExpired();
+}

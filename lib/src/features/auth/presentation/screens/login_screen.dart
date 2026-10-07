@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:noah_ark_base_app_flutter/src/core/config/app_config.dart';
+import 'package:noah_ark_base_app_flutter/src/core/routing/app_routes.dart';
 import 'package:noah_ark_base_app_flutter/src/core/theme/app_theme.dart';
 import 'package:noah_ark_base_app_flutter/src/core/theme/church_colors.dart';
 import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/bloc/auth_bloc.dart';
@@ -36,7 +37,7 @@ class _LoginScreenState extends State<LoginScreen> {
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is Authenticated) {
-            context.go('/devotional');
+            context.go(AppRoutes.devotional);
           } else if (state is AuthFailure) {
             showSnackBar(context, state.message, type: ResponseTypeEnum.error);
           }
@@ -297,7 +298,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ),
                                   ),
                                   GestureDetector(
-                                    onTap: () => context.push('/auth/register'),
+                                    onTap: () => context.push(AppRoutes.register),
                                     child: Text(
                                       'Create account',
                                       style: AppTheme.sans(

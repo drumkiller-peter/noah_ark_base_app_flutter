@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:noah_ark_base_app_flutter/src/core/routing/app_routes.dart';
 import 'package:noah_ark_base_app_flutter/src/core/theme/app_theme.dart';
 import 'package:noah_ark_base_app_flutter/src/core/theme/church_colors.dart';
 import 'package:noah_ark_base_app_flutter/src/features/auth/presentation/bloc/auth_bloc.dart';
@@ -72,7 +73,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
                         foregroundColor: context.churchColors.onPrimary,
                         padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
                       ),
-                      onPressed: () => context.push('/auth/login'),
+                      onPressed: () => context.push(AppRoutes.login),
                       child: const Text('Sign In'),
                     ),
                   ],
@@ -238,7 +239,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
           onTap: () {
-            context.push('/groups/${group.id}', extra: group);
+            context.push(AppRoutes.groupDetail(group.id), extra: group);
           },
           child: Padding(
             padding: const EdgeInsets.all(18),

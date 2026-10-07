@@ -193,3 +193,11 @@ extension ChurchColorsContext on BuildContext {
   /// The church's colors for whichever mode, light or dark, is showing.
   ChurchColors get churchColors => Theme.of(this).extension<ChurchColors>()!;
 }
+
+extension DeviceContext on BuildContext {
+  bool get isMobile => MediaQuery.of(this).size.width < 600;
+  bool get isTablet =>
+      MediaQuery.of(this).size.width >= 600 &&
+      MediaQuery.of(this).size.width < 900;
+  bool get isDesktop => MediaQuery.of(this).size.width >= 900;
+}

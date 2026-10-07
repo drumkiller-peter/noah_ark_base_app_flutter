@@ -27,6 +27,9 @@ class TokenStorage {
     }
   }
 
+  Future<void> saveUserRole(String userRole) =>
+      _storage.write(key: _keyUserRole, value: userRole);
+
   Future<void> saveGuestToken(String guestToken) async {
     await _storage.write(key: _keyGuestToken, value: guestToken);
   }

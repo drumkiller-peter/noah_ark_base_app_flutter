@@ -1,11 +1,11 @@
-import 'package:noah_ark_base_app_flutter/src/core/network/api_client.dart';
+import 'package:dio/dio.dart';
 import 'package:noah_ark_base_app_flutter/src/core/network/api_endpoints.dart';
 import 'package:noah_ark_base_app_flutter/src/features/sermons/domain/sermon.dart';
 
 class SermonsRepository {
-  final ApiClient apiClient;
+  final Dio dio;
 
-  SermonsRepository({required this.apiClient});
+  SermonsRepository({required this.dio});
 
   Future<List<Sermon>> fetchSermons({
     int page = 1,
@@ -13,7 +13,7 @@ class SermonsRepository {
     String? search,
   }) async {
     try {
-      final response = await apiClient.dio.get<dynamic>(
+      final response = await dio.get<dynamic>(
         ApiEndpoints.sermons,
         queryParameters: {
           'page': page,
@@ -79,7 +79,7 @@ class SermonsRepository {
   }
 
   Future<Sermon> fetchSermon(int id) async {
-    final response = await apiClient.dio.get<dynamic>('${ApiEndpoints.sermons}/$id');
+    final response = await dio.get<dynamic>('${ApiEndpoints.sermons}/$id');
     return Sermon.fromJson(response.data as Map<String, dynamic>);
   }
 }

@@ -1,3 +1,7 @@
+---
+status: partly superseded by ADR-0015 (the per-church settings file is `.env`, not `dart_defines.json`)
+---
+
 # Member Apps are built from church folders by a script, not Flutter flavors
 
 Each church's Member App is built from the one shared codebase. Everything that differs per church lives in `churches/<app-key>/`:

@@ -1,17 +1,17 @@
+import 'package:dio/dio.dart';
 import 'package:drift/drift.dart';
 import 'package:noah_ark_base_app_flutter/src/core/config/app_config.dart';
 import 'package:noah_ark_base_app_flutter/src/core/database/app_database.dart';
-import 'package:noah_ark_base_app_flutter/src/core/network/api_client.dart';
 import 'package:noah_ark_base_app_flutter/src/core/network/api_endpoints.dart';
 import 'package:noah_ark_base_app_flutter/src/features/hymns/domain/hymn.dart';
 
 class HymnsRepository {
-  final ApiClient apiClient;
+  final Dio dio;
   final AppDatabase db;
   final AppConfig appConfig;
 
   HymnsRepository({
-    required this.apiClient,
+    required this.dio,
     required this.db,
     required this.appConfig,
   });
@@ -43,7 +43,7 @@ class HymnsRepository {
 
     // 2. Fetch from backend
     try {
-      final response = await apiClient.dio.get<Map<String, dynamic>>(
+      final response = await dio.get<Map<String, dynamic>>(
         ApiEndpoints.hymns,
         queryParameters: {'page': 1, 'page_size': 100},
       );

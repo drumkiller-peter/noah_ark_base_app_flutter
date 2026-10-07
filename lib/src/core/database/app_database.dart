@@ -68,7 +68,15 @@ class CachedThemes extends Table {
   Set<Column<Object>>? get primaryKey => {tenantKey};
 }
 
-@DriftDatabase(tables: [CachedHymns, CachedDailyQuotes, CachedBulletins, CachedEvents, CachedThemes])
+@DriftDatabase(
+  tables: [
+    CachedHymns,
+    CachedDailyQuotes,
+    CachedBulletins,
+    CachedEvents,
+    CachedThemes,
+  ],
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
@@ -77,12 +85,12 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-        onUpgrade: (m, from, to) async {
-          if (from < 2) {
-            await m.createTable(cachedThemes);
-          }
-        },
-      );
+    onUpgrade: (m, from, to) async {
+      if (from < 2) {
+        await m.createTable(cachedThemes);
+      }
+    },
+  );
 
   static QueryExecutor _openConnection() {
     return driftDatabase(name: 'noah_ark_db');

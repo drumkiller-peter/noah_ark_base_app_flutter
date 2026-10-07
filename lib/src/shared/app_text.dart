@@ -22,6 +22,7 @@ class AppText extends StatelessWidget {
     this.maxLines,
     this.overflow,
     this.softWrap,
+    this.color,
   });
 
   final String data;
@@ -31,6 +32,7 @@ class AppText extends StatelessWidget {
   final int? maxLines;
   final TextOverflow? overflow;
   final bool? softWrap;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +50,10 @@ class AppText extends StatelessWidget {
 
     return Text(
       data,
-      style: style == null ? baseStyle : baseStyle?.merge(style) ?? style,
+      style: style == null
+          ? baseStyle
+          : baseStyle?.merge(style).copyWith(color: color ?? baseStyle.color) ??
+                style,
       textAlign: textAlign,
       maxLines: maxLines,
       overflow: overflow,

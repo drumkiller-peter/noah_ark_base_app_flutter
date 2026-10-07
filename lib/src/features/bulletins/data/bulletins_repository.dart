@@ -1,24 +1,24 @@
+import 'package:dio/dio.dart';
 import 'package:drift/drift.dart';
 import 'package:noah_ark_base_app_flutter/src/core/config/app_config.dart';
 import 'package:noah_ark_base_app_flutter/src/core/database/app_database.dart';
-import 'package:noah_ark_base_app_flutter/src/core/network/api_client.dart';
 import 'package:noah_ark_base_app_flutter/src/core/network/api_endpoints.dart';
 import 'package:noah_ark_base_app_flutter/src/features/bulletins/domain/bulletin.dart';
 
 class BulletinsRepository {
-  final ApiClient apiClient;
+  final Dio dio;
   final AppDatabase database;
   final AppConfig config;
 
   BulletinsRepository({
-    required this.apiClient,
+    required this.dio,
     required this.database,
     required this.config,
   });
 
   Future<List<Bulletin>> fetchBulletins() async {
     try {
-      final response = await apiClient.dio.get<dynamic>(
+      final response = await dio.get<dynamic>(
         ApiEndpoints.bulletins,
         queryParameters: {'is_published': true},
       );
@@ -42,9 +42,9 @@ class BulletinsRepository {
       return bulletins;
     } catch (_) {
       // Fallback to local SQLite cache
-      final cached = await (database.select(database.cachedBulletins)
-            ..where((tbl) => tbl.tenantKey.equals(config.tenantKey)))
-          .get();
+      final cached = await (database.select(
+        database.cachedBulletins,
+      )..where((tbl) => tbl.tenantKey.equals(config.tenantKey))).get();
 
       if (cached.isNotEmpty) {
         return cached
@@ -86,7 +86,7 @@ class BulletinsRepository {
 
   Future<List<Announcement>> fetchAnnouncements() async {
     try {
-      final response = await apiClient.dio.get<dynamic>(ApiEndpoints.announcements);
+      final response = await dio.get<dynamic>(ApiEndpoints.announcements);
 
       final List<dynamic> items;
       if (response.data is Map<String, dynamic> &&
@@ -118,8 +118,7 @@ class BulletinsRepository {
           id: 2,
           tenantId: 1,
           title: 'Youth Choir Rehearsal',
-          body:
-              'All youth choir participants meet at the sanctuary at 4:00 PM this Friday.',
+          body: 'All youth choir participants meet at the sanctuary at 4:00 PM this Friday.',
           isUrgent: false,
           publishAt: DateTime.now(),
           createdAt: DateTime.now(),
@@ -130,7 +129,9 @@ class BulletinsRepository {
 
   Future<void> _cacheBulletins(List<Bulletin> bulletins) async {
     for (final bulletin in bulletins) {
-      await database.into(database.cachedBulletins).insertOnConflictUpdate(
+      await database
+          .into(database.cachedBulletins)
+          .insertOnConflictUpdate(
             CachedBulletinsCompanion(
               id: Value(bulletin.id),
               title: Value(bulletin.title),

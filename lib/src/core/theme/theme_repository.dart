@@ -1,21 +1,21 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:dio/dio.dart';
 import 'package:noah_ark_base_app_flutter/src/core/config/app_config.dart';
 import 'package:noah_ark_base_app_flutter/src/core/database/app_database.dart';
-import 'package:noah_ark_base_app_flutter/src/core/network/api_client.dart';
 import 'package:noah_ark_base_app_flutter/src/core/network/api_endpoints.dart';
 import 'package:noah_ark_base_app_flutter/src/core/theme/church_colors.dart';
 
 /// Loads the church's Theme for the app to open in, and keeps it on the device.
 class ThemeRepository {
   ThemeRepository({
-    required this.apiClient,
+    required this.dio,
     required this.db,
     required this.appConfig,
   });
 
-  final ApiClient apiClient;
+  final Dio dio;
   final AppDatabase db;
   final AppConfig appConfig;
 
@@ -54,7 +54,7 @@ class ThemeRepository {
   /// it is safe to leave running unawaited.
   Future<ChurchTheme?> _fetchAndKeep() async {
     try {
-      final response = await apiClient.dio.get<Map<String, dynamic>>(ApiEndpoints.theme);
+      final response = await dio.get<Map<String, dynamic>>(ApiEndpoints.theme);
       final json = response.data;
       if (json == null) return null;
       // Parse before keeping, so a malformed response never replaces a good copy.

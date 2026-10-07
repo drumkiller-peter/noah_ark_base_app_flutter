@@ -1,5 +1,5 @@
 ---
-status: partly superseded by ADR-0013 (Flutter flavors)
+status: partly superseded by ADR-0013 (Flutter flavors) and ADR-0015 (`--dart-define`)
 ---
 
 # Hybrid Baked and Dynamic White-Label Tenancy

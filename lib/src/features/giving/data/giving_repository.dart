@@ -1,15 +1,15 @@
-import 'package:noah_ark_base_app_flutter/src/core/network/api_client.dart';
+import 'package:dio/dio.dart';
 import 'package:noah_ark_base_app_flutter/src/core/network/api_endpoints.dart';
 import 'package:noah_ark_base_app_flutter/src/features/giving/domain/fund.dart';
 
 class GivingRepository {
-  final ApiClient apiClient;
+  final Dio dio;
 
-  GivingRepository({required this.apiClient});
+  GivingRepository({required this.dio});
 
   Future<List<ChurchFund>> getFunds() async {
     try {
-      final response = await apiClient.dio.get<dynamic>(ApiEndpoints.funds);
+      final response = await dio.get<dynamic>(ApiEndpoints.funds);
       final List<dynamic> items;
       if (response.data is List) {
         items = response.data as List<dynamic>;
@@ -74,7 +74,7 @@ class GivingRepository {
 
   Future<List<DonationReceipt>> getMyDonations() async {
     try {
-      final response = await apiClient.dio.get<dynamic>(
+      final response = await dio.get<dynamic>(
         ApiEndpoints.donations,
         queryParameters: {'page': 1, 'page_size': 50},
       );
@@ -130,14 +130,15 @@ class GivingRepository {
     String? note,
     bool isAnonymous = false,
   }) async {
-    final response = await apiClient.dio.post<dynamic>(
+    final response = await dio.post<dynamic>(
       ApiEndpoints.donations,
       data: {
         'amount': amount,
         'currency': 'NPR',
         'fund_id': fundId,
         'payment_gateway': paymentMethod,
-        'reference_id': referenceId ?? 'MANUAL-${DateTime.now().millisecondsSinceEpoch}',
+        'reference_id':
+            referenceId ?? 'MANUAL-${DateTime.now().millisecondsSinceEpoch}',
         'note': ?note,
         'is_anonymous': isAnonymous,
       },

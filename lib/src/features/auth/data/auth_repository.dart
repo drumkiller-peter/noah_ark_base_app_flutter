@@ -1,13 +1,21 @@
-import 'package:noah_ark_base_app_flutter/src/core/network/api_client.dart';
+import 'package:dio/dio.dart';
 import 'package:noah_ark_base_app_flutter/src/core/network/api_endpoints.dart';
 import 'package:noah_ark_base_app_flutter/src/core/security/token_storage.dart';
 import 'package:noah_ark_base_app_flutter/src/features/auth/domain/user.dart';
 
 class AuthRepository {
-  final ApiClient apiClient;
+  final Dio dio;
   final TokenStorage tokenStorage;
 
-  AuthRepository({required this.apiClient, required this.tokenStorage});
+  /// Fires when the backend ends the member's session by rejecting its
+  /// refresh token; see `AuthInterceptor.sessionExpired`.
+  final Stream<void> sessionExpired;
+
+  AuthRepository({
+    required this.dio,
+    required this.tokenStorage,
+    required this.sessionExpired,
+  });
 
   Future<User?> checkAuth() async {
     final token = await tokenStorage.getAccessToken();
@@ -15,16 +23,13 @@ class AuthRepository {
       return null;
     }
     try {
-      final response = await apiClient.dio.get<Map<String, dynamic>>(
+      final response = await dio.get<Map<String, dynamic>>(
         ApiEndpoints.me,
       );
       if (response.statusCode == 200 && response.data != null) {
         final user = User.fromJson(response.data!);
-        await tokenStorage.saveUserTokens(
-          accessToken: token,
-          refreshToken: (await tokenStorage.getRefreshToken()) ?? '',
-          userRole: user.role.value,
-        );
+        // Only the role: the call may have refreshed the tokens on the way.
+        await tokenStorage.saveUserRole(user.role.value);
         return user;
       }
     } catch (_) {
@@ -37,7 +42,7 @@ class AuthRepository {
     required String identifier,
     required String password,
   }) async {
-    final response = await apiClient.dio.post<Map<String, dynamic>>(
+    final response = await dio.post<Map<String, dynamic>>(
       ApiEndpoints.login,
       data: {'identifier': identifier, 'password': password},
     );
@@ -53,16 +58,11 @@ class AuthRepository {
       );
 
       // Fetch user profile immediately after login
-      final profileResponse = await apiClient.dio.get<Map<String, dynamic>>(
+      final profileResponse = await dio.get<Map<String, dynamic>>(
         ApiEndpoints.me,
       );
       final user = User.fromJson(profileResponse.data!);
-
-      await tokenStorage.saveUserTokens(
-        accessToken: accessToken,
-        refreshToken: refreshToken,
-        userRole: user.role.value,
-      );
+      await tokenStorage.saveUserRole(user.role.value);
 
       return user;
     } else {
@@ -76,7 +76,7 @@ class AuthRepository {
     String? phone,
     required String password,
   }) async {
-    final response = await apiClient.dio.post<Map<String, dynamic>>(
+    final response = await dio.post<Map<String, dynamic>>(
       ApiEndpoints.memberRegister,
       data: {
         'full_name': fullName,
@@ -107,7 +107,7 @@ class AuthRepository {
     try {
       final refreshToken = await tokenStorage.getRefreshToken();
       if (refreshToken != null && refreshToken.isNotEmpty) {
-        await apiClient.dio.post<void>(
+        await dio.post<void>(
           ApiEndpoints.logout,
           data: {'refresh_token': refreshToken},
         );

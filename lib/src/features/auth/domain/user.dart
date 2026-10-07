@@ -4,10 +4,13 @@ part 'user.freezed.dart';
 part 'user.g.dart';
 
 enum UserRole {
+  @JsonValue('super_admin')
   superAdmin('super_admin'),
+  @JsonValue('pastor')
   pastor('pastor'),
   admin('admin'),
   treasurer('treasurer'),
+  @JsonValue('youth_leader')
   youthLeader('youth_leader'),
   elder('elder'),
   member('member');
@@ -66,13 +69,29 @@ enum UserRole {
 abstract class User with _$User {
   const factory User({
     required int id,
-    required String fullName,
-    String? email,
+    @JsonKey(name: 'tenant_id') required int tenantId,
+    @JsonKey(name: 'full_name') required String fullName,
+    required String email,
     String? phone,
     required UserRole role,
-    required int tenantId,
-    @Default(true) bool isActive,
+    @JsonKey(name: 'language_preference') required String languagePreference,
+    @JsonKey(name: 'privacy_settings') required PrivacySettings privacySettings,
+    @JsonKey(name: 'is_active') required bool isActive,
+    @JsonKey(name: 'created_at') required DateTime createdAt,
   }) = _User;
 
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
+}
+
+@freezed
+abstract class PrivacySettings with _$PrivacySettings {
+  const factory PrivacySettings({
+    @JsonKey(name: 'show_email') required bool showEmail,
+    @JsonKey(name: 'show_phone') required bool showPhone,
+    @JsonKey(name: 'show_in_directory') required bool showInDirectory,
+    @JsonKey(name: 'give_anonymously') required bool giveAnonymously,
+  }) = _PrivacySettings;
+
+  factory PrivacySettings.fromJson(Map<String, dynamic> json) =>
+      _$PrivacySettingsFromJson(json);
 }

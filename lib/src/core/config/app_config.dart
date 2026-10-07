@@ -1,10 +1,12 @@
 import 'package:flutter/foundation.dart';
+import 'package:noah_ark_base_app_flutter/src/core/config/env.dart';
 
 /// Application and Tenant Configuration.
-/// Supports both compile-time baked values (--dart-define) and dynamic runtime resolution.
+/// Supports both build-time baked values (from `.env`) and dynamic runtime resolution.
 class AppConfig {
   static const String _defaultTenantKey = 'noah-ark';
   static const String _defaultBaseUrl = 'http://127.0.0.1:8000/api/v1';
+  static const String _defaultChurchName = 'Noah Ark Fellowship';
 
   final String tenantKey;
   final String apiBaseUrl;
@@ -21,36 +23,43 @@ class AppConfig {
     required this.tenantKey,
     required this.apiBaseUrl,
     required this.isBaked,
-    this.churchName = 'Noah Ark Fellowship',
+    this.churchName = _defaultChurchName,
     this.clientId = '',
     this.clientSecret = '',
   });
 
-  /// Initializes the AppConfig, checking environment definitions first.
-  static AppConfig initialize() {
-    const bakedKey = String.fromEnvironment('TENANT_KEY');
-    const bakedBaseUrl = String.fromEnvironment('API_BASE_URL');
-    const bakedName = String.fromEnvironment('CHURCH_NAME');
-    const bakedClientId = String.fromEnvironment('CLIENT_ID');
-    const bakedClientSecret = String.fromEnvironment('CLIENT_SECRET');
+  /// Reads the build settings from `.env`; see [Env].
+  factory AppConfig.fromEnv() => AppConfig.resolve(
+    tenantKey: Env.tenantKey,
+    apiBaseUrl: Env.apiBaseUrl,
+    churchName: Env.churchName,
+    clientId: Env.clientId,
+    clientSecret: Env.clientSecret,
+  );
 
-    final hasBakedKey = bakedKey.isNotEmpty;
-    final resolvedTenantKey = hasBakedKey ? bakedKey : _resolveDynamicTenantKey();
-    final resolvedBaseUrl = bakedBaseUrl.isNotEmpty ? bakedBaseUrl : _defaultBaseUrl;
-    final resolvedName = bakedName.isNotEmpty ? bakedName : 'Noah Ark Fellowship';
-
+  /// Fills empty build settings with defaults. An empty [tenantKey] makes a
+  /// dynamic build, whose church comes from the Web hostname.
+  factory AppConfig.resolve({
+    String tenantKey = '',
+    String apiBaseUrl = '',
+    String churchName = '',
+    String clientId = '',
+    String clientSecret = '',
+  }) {
+    final isBaked = tenantKey.isNotEmpty;
     return AppConfig(
-      tenantKey: resolvedTenantKey,
-      apiBaseUrl: resolvedBaseUrl,
-      isBaked: hasBakedKey,
-      churchName: resolvedName,
-      clientId: bakedClientId,
-      clientSecret: bakedClientSecret,
+      tenantKey: isBaked ? tenantKey : _resolveDynamicTenantKey(),
+      apiBaseUrl: apiBaseUrl.isNotEmpty ? apiBaseUrl : _defaultBaseUrl,
+      isBaked: isBaked,
+      churchName: churchName.isNotEmpty ? churchName : _defaultChurchName,
+      clientId: clientId,
+      clientSecret: clientSecret,
     );
   }
 
   /// Whether the app can ask the backend for a guest token.
-  bool get hasClientCredentials => clientId.isNotEmpty && clientSecret.isNotEmpty;
+  bool get hasClientCredentials =>
+      clientId.isNotEmpty && clientSecret.isNotEmpty;
 
   /// In Web environments, extract subdomain from hostname; otherwise fallback to default.
   static String _resolveDynamicTenantKey() {
